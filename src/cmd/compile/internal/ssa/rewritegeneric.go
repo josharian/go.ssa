@@ -65,7 +65,7 @@ func rewriteValuegeneric(v *Value, config *Config) bool {
 			v.AuxInt = 0
 			v.Aux = nil
 			v.resetArgs()
-			v0 := v.Block.NewValue0(v.Line, OpPtrIndex, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpPtrIndex, TypeInvalid)
 			v0.Type = v.Type.PtrTo()
 			v0.AddArg(ptr)
 			v0.AddArg(idx)
@@ -90,18 +90,18 @@ func rewriteValuegeneric(v *Value, config *Config) bool {
 			v.AuxInt = 0
 			v.Aux = nil
 			v.resetArgs()
-			v0 := v.Block.NewValue0(v.Line, OpOffPtr, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpOffPtr, TypeInvalid)
 			v0.Type = TypeBytePtr
 			v0.AuxInt = 2 * config.PtrSize
-			v1 := v.Block.NewValue0(v.Line, OpAddr, TypeInvalid)
+			v1 := v.Block.NewValue0(v.N, OpAddr, TypeInvalid)
 			v1.Type = TypeBytePtr
 			v1.Aux = config.fe.StringSym(s.(string))
-			v2 := v.Block.NewValue0(v.Line, OpSB, TypeInvalid)
+			v2 := v.Block.NewValue0(v.N, OpSB, TypeInvalid)
 			v2.Type = config.Uintptr
 			v1.AddArg(v2)
 			v0.AddArg(v1)
 			v.AddArg(v0)
-			v3 := v.Block.NewValue0(v.Line, OpConst, TypeInvalid)
+			v3 := v.Block.NewValue0(v.N, OpConst, TypeInvalid)
 			v3.Type = config.Uintptr
 			v3.AuxInt = int64(len(s.(string)))
 			v.AddArg(v3)
@@ -148,14 +148,14 @@ func rewriteValuegeneric(v *Value, config *Config) bool {
 			v.AuxInt = 0
 			v.Aux = nil
 			v.resetArgs()
-			v0 := v.Block.NewValue0(v.Line, OpLoad, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpLoad, TypeInvalid)
 			v0.Type = TypeBytePtr
 			v0.AddArg(ptr)
 			v0.AddArg(mem)
 			v.AddArg(v0)
-			v1 := v.Block.NewValue0(v.Line, OpLoad, TypeInvalid)
+			v1 := v.Block.NewValue0(v.N, OpLoad, TypeInvalid)
 			v1.Type = config.Uintptr
-			v2 := v.Block.NewValue0(v.Line, OpOffPtr, TypeInvalid)
+			v2 := v.Block.NewValue0(v.N, OpOffPtr, TypeInvalid)
 			v2.Type = TypeBytePtr
 			v2.AuxInt = config.PtrSize
 			v2.AddArg(ptr)
@@ -207,10 +207,10 @@ func rewriteValuegeneric(v *Value, config *Config) bool {
 			v.Aux = nil
 			v.resetArgs()
 			v.AddArg(ptr)
-			v0 := v.Block.NewValue0(v.Line, OpMul, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpMul, TypeInvalid)
 			v0.Type = config.Uintptr
 			v0.AddArg(idx)
-			v1 := v.Block.NewValue0(v.Line, OpConst, TypeInvalid)
+			v1 := v.Block.NewValue0(v.N, OpConst, TypeInvalid)
 			v1.Type = config.Uintptr
 			v1.AuxInt = t.Elem().Size()
 			v0.AddArg(v1)
@@ -234,10 +234,10 @@ func rewriteValuegeneric(v *Value, config *Config) bool {
 			v.AuxInt = 0
 			v.Aux = nil
 			v.resetArgs()
-			v0 := v.Block.NewValue0(v.Line, OpAddPtr, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpAddPtr, TypeInvalid)
 			v0.Type = ptr.Type
 			v0.AddArg(ptr)
-			v1 := v.Block.NewValue0(v.Line, OpConst, TypeInvalid)
+			v1 := v.Block.NewValue0(v.N, OpConst, TypeInvalid)
 			v1.Type = config.Uintptr
 			v1.AuxInt = config.PtrSize * 2
 			v0.AddArg(v1)
@@ -262,10 +262,10 @@ func rewriteValuegeneric(v *Value, config *Config) bool {
 			v.AuxInt = 0
 			v.Aux = nil
 			v.resetArgs()
-			v0 := v.Block.NewValue0(v.Line, OpAddPtr, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpAddPtr, TypeInvalid)
 			v0.Type = ptr.Type
 			v0.AddArg(ptr)
-			v1 := v.Block.NewValue0(v.Line, OpConst, TypeInvalid)
+			v1 := v.Block.NewValue0(v.N, OpConst, TypeInvalid)
 			v1.Type = config.Uintptr
 			v1.AuxInt = config.PtrSize
 			v0.AddArg(v1)
@@ -342,19 +342,19 @@ func rewriteValuegeneric(v *Value, config *Config) bool {
 			v.AuxInt = 0
 			v.Aux = nil
 			v.resetArgs()
-			v0 := v.Block.NewValue0(v.Line, OpOffPtr, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpOffPtr, TypeInvalid)
 			v0.Type = TypeBytePtr
 			v0.AuxInt = config.PtrSize
 			v0.AddArg(dst)
 			v.AddArg(v0)
-			v1 := v.Block.NewValue0(v.Line, OpStringLen, TypeInvalid)
+			v1 := v.Block.NewValue0(v.N, OpStringLen, TypeInvalid)
 			v1.Type = config.Uintptr
 			v1.AddArg(str)
 			v.AddArg(v1)
-			v2 := v.Block.NewValue0(v.Line, OpStore, TypeInvalid)
+			v2 := v.Block.NewValue0(v.N, OpStore, TypeInvalid)
 			v2.Type = TypeMem
 			v2.AddArg(dst)
-			v3 := v.Block.NewValue0(v.Line, OpStringPtr, TypeInvalid)
+			v3 := v.Block.NewValue0(v.N, OpStringPtr, TypeInvalid)
 			v3.Type = TypeBytePtr
 			v3.AddArg(str)
 			v2.AddArg(v3)
@@ -418,7 +418,7 @@ func rewriteValuegeneric(v *Value, config *Config) bool {
 			v.AuxInt = 0
 			v.Aux = nil
 			v.resetArgs()
-			v0 := v.Block.NewValue0(v.Line, OpOffPtr, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpOffPtr, TypeInvalid)
 			v0.Type = v.Type.PtrTo()
 			v0.AuxInt = idx
 			v0.AddArg(ptr)

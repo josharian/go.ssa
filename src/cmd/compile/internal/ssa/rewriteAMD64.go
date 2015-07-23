@@ -198,7 +198,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.AuxInt = 0
 			v.Aux = nil
 			v.resetArgs()
-			v0 := v.Block.NewValue0(v.Line, OpAMD64ADDW, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpAMD64ADDW, TypeInvalid)
 			v0.Type = v.Type
 			v0.AddArg(x)
 			v0.AddArg(y)
@@ -237,7 +237,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.AuxInt = 0
 			v.Aux = nil
 			v.resetArgs()
-			v0 := v.Block.NewValue0(v.Line, OpAMD64ADDL, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpAMD64ADDL, TypeInvalid)
 			v0.Type = v.Type
 			v0.AddArg(x)
 			v0.AddArg(y)
@@ -312,7 +312,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.AuxInt = 0
 			v.Aux = nil
 			v.resetArgs()
-			v0 := v.Block.NewValue0(v.Line, OpAMD64ADDB, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpAMD64ADDB, TypeInvalid)
 			v0.Type = v.Type
 			v0.AddArg(x)
 			v0.AddArg(y)
@@ -463,7 +463,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.AuxInt = 0
 			v.Aux = nil
 			v.resetArgs()
-			v0 := v.Block.NewValue0(v.Line, OpAMD64CMPQconst, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpAMD64CMPQconst, TypeInvalid)
 			v0.Type = TypeFlags
 			v0.AddArg(x)
 			v0.AuxInt = c
@@ -620,7 +620,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.AuxInt = 0
 			v.Aux = nil
 			v.resetArgs()
-			v0 := v.Block.NewValue0(v.Line, OpAMD64CMPQ, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpAMD64CMPQ, TypeInvalid)
 			v0.Type = TypeFlags
 			v0.AddArg(x)
 			v0.AddArg(y)
@@ -641,7 +641,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.AuxInt = 0
 			v.Aux = nil
 			v.resetArgs()
-			v0 := v.Block.NewValue0(v.Line, OpAMD64CMPQ, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpAMD64CMPQ, TypeInvalid)
 			v0.Type = TypeFlags
 			v0.AddArg(x)
 			v0.AddArg(y)
@@ -662,7 +662,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.AuxInt = 0
 			v.Aux = nil
 			v.resetArgs()
-			v0 := v.Block.NewValue0(v.Line, OpAMD64CMPQ, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpAMD64CMPQ, TypeInvalid)
 			v0.Type = TypeFlags
 			v0.AddArg(x)
 			v0.AddArg(y)
@@ -683,7 +683,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.AuxInt = 0
 			v.Aux = nil
 			v.resetArgs()
-			v0 := v.Block.NewValue0(v.Line, OpAMD64CMPQ, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpAMD64CMPQ, TypeInvalid)
 			v0.Type = TypeFlags
 			v0.AddArg(idx)
 			v0.AddArg(len)
@@ -703,7 +703,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.AuxInt = 0
 			v.Aux = nil
 			v.resetArgs()
-			v0 := v.Block.NewValue0(v.Line, OpAMD64TESTQ, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpAMD64TESTQ, TypeInvalid)
 			v0.Type = TypeFlags
 			v0.AddArg(p)
 			v0.AddArg(p)
@@ -724,7 +724,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.AuxInt = 0
 			v.Aux = nil
 			v.resetArgs()
-			v0 := v.Block.NewValue0(v.Line, OpAMD64CMPQ, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpAMD64CMPQ, TypeInvalid)
 			v0.Type = TypeFlags
 			v0.AddArg(x)
 			v0.AddArg(y)
@@ -745,7 +745,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.AuxInt = 0
 			v.Aux = nil
 			v.resetArgs()
-			v0 := v.Block.NewValue0(v.Line, OpAMD64CMPQ, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpAMD64CMPQ, TypeInvalid)
 			v0.Type = TypeFlags
 			v0.AddArg(x)
 			v0.AddArg(y)
@@ -852,14 +852,14 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.AuxInt = 0
 			v.Aux = nil
 			v.resetArgs()
-			v0 := v.Block.NewValue0(v.Line, OpAMD64SHLQ, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpAMD64SHLQ, TypeInvalid)
 			v0.Type = t
 			v0.AddArg(x)
 			v0.AddArg(y)
 			v.AddArg(v0)
-			v1 := v.Block.NewValue0(v.Line, OpAMD64SBBQcarrymask, TypeInvalid)
+			v1 := v.Block.NewValue0(v.N, OpAMD64SBBQcarrymask, TypeInvalid)
 			v1.Type = t
-			v2 := v.Block.NewValue0(v.Line, OpAMD64CMPQconst, TypeInvalid)
+			v2 := v.Block.NewValue0(v.N, OpAMD64CMPQconst, TypeInvalid)
 			v2.Type = TypeFlags
 			v2.AuxInt = 64
 			v2.AddArg(y)
@@ -1345,7 +1345,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.resetArgs()
 			v.AddArg(dst)
 			v.AddArg(src)
-			v0 := v.Block.NewValue0(v.Line, OpConst, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpConst, TypeInvalid)
 			v0.Type = TypeUInt64
 			v0.AuxInt = size
 			v.AddArg(v0)
@@ -1387,7 +1387,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.AuxInt = 0
 			v.Aux = nil
 			v.resetArgs()
-			v0 := v.Block.NewValue0(v.Line, OpAMD64NEGW, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpAMD64NEGW, TypeInvalid)
 			v0.Type = v.Type
 			v0.AddArg(x)
 			v.AddArg(v0)
@@ -1422,7 +1422,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.AuxInt = 0
 			v.Aux = nil
 			v.resetArgs()
-			v0 := v.Block.NewValue0(v.Line, OpAMD64NEGL, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpAMD64NEGL, TypeInvalid)
 			v0.Type = v.Type
 			v0.AddArg(x)
 			v.AddArg(v0)
@@ -1489,7 +1489,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.AuxInt = 0
 			v.Aux = nil
 			v.resetArgs()
-			v0 := v.Block.NewValue0(v.Line, OpAMD64NEGB, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpAMD64NEGB, TypeInvalid)
 			v0.Type = v.Type
 			v0.AddArg(x)
 			v.AddArg(v0)
@@ -1525,7 +1525,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.AuxInt = 0
 			v.Aux = nil
 			v.resetArgs()
-			v0 := v.Block.NewValue0(v.Line, OpAMD64CMPQ, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpAMD64CMPQ, TypeInvalid)
 			v0.Type = TypeFlags
 			v0.AddArg(x)
 			v0.AddArg(y)
@@ -1584,14 +1584,14 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.resetArgs()
 			v.Type = t
 			v.AddArg(x)
-			v0 := v.Block.NewValue0(v.Line, OpAMD64CMOVQCC, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpAMD64CMOVQCC, TypeInvalid)
 			v0.Type = t
-			v1 := v.Block.NewValue0(v.Line, OpAMD64CMPQconst, TypeInvalid)
+			v1 := v.Block.NewValue0(v.N, OpAMD64CMPQconst, TypeInvalid)
 			v1.Type = TypeFlags
 			v1.AuxInt = 64
 			v1.AddArg(y)
 			v0.AddArg(v1)
-			v2 := v.Block.NewValue0(v.Line, OpConst, TypeInvalid)
+			v2 := v.Block.NewValue0(v.N, OpConst, TypeInvalid)
 			v2.Type = t
 			v2.AuxInt = 63
 			v0.AddArg(v2)
@@ -1614,14 +1614,14 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.AuxInt = 0
 			v.Aux = nil
 			v.resetArgs()
-			v0 := v.Block.NewValue0(v.Line, OpAMD64SHRQ, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpAMD64SHRQ, TypeInvalid)
 			v0.Type = t
 			v0.AddArg(x)
 			v0.AddArg(y)
 			v.AddArg(v0)
-			v1 := v.Block.NewValue0(v.Line, OpAMD64SBBQcarrymask, TypeInvalid)
+			v1 := v.Block.NewValue0(v.N, OpAMD64SBBQcarrymask, TypeInvalid)
 			v1.Type = t
-			v2 := v.Block.NewValue0(v.Line, OpAMD64CMPQconst, TypeInvalid)
+			v2 := v.Block.NewValue0(v.N, OpAMD64CMPQconst, TypeInvalid)
 			v2.Type = TypeFlags
 			v2.AuxInt = 64
 			v2.AddArg(y)
@@ -1819,7 +1819,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.AuxInt = 0
 			v.Aux = nil
 			v.resetArgs()
-			v0 := v.Block.NewValue0(v.Line, OpAMD64SUBQconst, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpAMD64SUBQconst, TypeInvalid)
 			v0.Type = t
 			v0.AddArg(x)
 			v0.AuxInt = c
@@ -1971,7 +1971,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.AuxInt = 0
 			v.Aux = nil
 			v.resetArgs()
-			v0 := v.Block.NewValue0(v.Line, OpAMD64SUBW, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpAMD64SUBW, TypeInvalid)
 			v0.Type = v.Type
 			v0.AddArg(x)
 			v0.AddArg(y)
@@ -2010,7 +2010,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.AuxInt = 0
 			v.Aux = nil
 			v.resetArgs()
-			v0 := v.Block.NewValue0(v.Line, OpAMD64SUBL, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpAMD64SUBL, TypeInvalid)
 			v0.Type = v.Type
 			v0.AddArg(x)
 			v0.AddArg(y)
@@ -2085,7 +2085,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.AuxInt = 0
 			v.Aux = nil
 			v.resetArgs()
-			v0 := v.Block.NewValue0(v.Line, OpAMD64SUBB, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpAMD64SUBB, TypeInvalid)
 			v0.Type = v.Type
 			v0.AddArg(x)
 			v0.AddArg(y)
@@ -2146,7 +2146,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.Aux = nil
 			v.resetArgs()
 			v.AddArg(destptr)
-			v0 := v.Block.NewValue0(v.Line, OpConst, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpConst, TypeInvalid)
 			v0.Type = TypeInt8
 			v0.AuxInt = 0
 			v.AddArg(v0)
@@ -2170,7 +2170,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.Aux = nil
 			v.resetArgs()
 			v.AddArg(destptr)
-			v0 := v.Block.NewValue0(v.Line, OpConst, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpConst, TypeInvalid)
 			v0.Type = TypeInt16
 			v0.AuxInt = 0
 			v.AddArg(v0)
@@ -2194,7 +2194,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.Aux = nil
 			v.resetArgs()
 			v.AddArg(destptr)
-			v0 := v.Block.NewValue0(v.Line, OpConst, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpConst, TypeInvalid)
 			v0.Type = TypeInt32
 			v0.AuxInt = 0
 			v.AddArg(v0)
@@ -2218,7 +2218,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.Aux = nil
 			v.resetArgs()
 			v.AddArg(destptr)
-			v0 := v.Block.NewValue0(v.Line, OpConst, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpConst, TypeInvalid)
 			v0.Type = TypeInt64
 			v0.AuxInt = 0
 			v.AddArg(v0)
@@ -2265,15 +2265,15 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.Aux = nil
 			v.resetArgs()
 			v.AuxInt = size % 8
-			v0 := v.Block.NewValue0(v.Line, OpOffPtr, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpOffPtr, TypeInvalid)
 			v0.Type = TypeUInt64
 			v0.AuxInt = size - (size % 8)
 			v0.AddArg(destptr)
 			v.AddArg(v0)
-			v1 := v.Block.NewValue0(v.Line, OpAMD64REPSTOSQ, TypeInvalid)
+			v1 := v.Block.NewValue0(v.N, OpAMD64REPSTOSQ, TypeInvalid)
 			v1.Type = TypeMem
 			v1.AddArg(destptr)
-			v2 := v.Block.NewValue0(v.Line, OpConst, TypeInvalid)
+			v2 := v.Block.NewValue0(v.N, OpConst, TypeInvalid)
 			v2.Type = TypeUInt64
 			v2.AuxInt = size / 8
 			v1.AddArg(v2)
@@ -2444,7 +2444,7 @@ func rewriteBlockAMD64(b *Block) bool {
 				goto end7e22019fb0effc80f85c05ea30bdb5d9
 			}
 			b.Kind = BlockAMD64NE
-			v0 := v.Block.NewValue0(v.Line, OpAMD64TESTB, TypeInvalid)
+			v0 := v.Block.NewValue0(v.N, OpAMD64TESTB, TypeInvalid)
 			v0.Type = TypeFlags
 			v0.AddArg(cond)
 			v0.AddArg(cond)

@@ -27,8 +27,8 @@ func buildssa(fn *Node) (ssafn *ssa.Func, usessa bool) {
 	}
 
 	var s state
-	s.pushLine(fn.Lineno)
-	defer s.popLine()
+	s.pushNode(fn)
+	defer s.popNode()
 
 	// TODO(khr): build config just once at the start of the compiler binary
 
@@ -187,8 +187,8 @@ type state struct {
 	sp       *ssa.Value
 	sb       *ssa.Value
 
-	// line number stack.  The current line number is top of stack
-	line []int32
+	// Node stack.  The current node is top of stack
+	node []*Node
 }
 
 type ssaLabel struct {
@@ -249,102 +249,102 @@ func (s *state) endBlock() *ssa.Block {
 	s.defvars[b.ID] = s.vars
 	s.curBlock = nil
 	s.vars = nil
-	b.Line = s.peekLine()
+	b.N = s.peekNode()
 	return b
 }
 
-// pushLine pushes a line number on the line number stack.
-func (s *state) pushLine(line int32) {
-	s.line = append(s.line, line)
+// pushNode pushes a node onto the node stack.
+func (s *state) pushNode(n *Node) {
+	s.node = append(s.node, n)
 }
 
-// popLine pops the top of the line number stack.
-func (s *state) popLine() {
-	s.line = s.line[:len(s.line)-1]
+// popNode pops the top of the node stack.
+func (s *state) popNode() {
+	s.node = s.node[:len(s.node)-1]
 }
 
-// peekLine peek the top of the line number stack.
-func (s *state) peekLine() int32 {
-	return s.line[len(s.line)-1]
+// peekNode peeks at the top of the node stack.
+func (s *state) peekNode() *Node {
+	return s.node[len(s.node)-1]
 }
 
 func (s *state) Error(msg string, args ...interface{}) {
-	yyerrorl(int(s.peekLine()), msg, args...)
+	yyerrorl(int(s.peekNode().Lineno), msg, args...)
 }
 
 // newValue0 adds a new value with no arguments to the current block.
 func (s *state) newValue0(op ssa.Op, t ssa.Type) *ssa.Value {
-	return s.curBlock.NewValue0(s.peekLine(), op, t)
+	return s.curBlock.NewValue0(s.peekNode(), op, t)
 }
 
 // newValue0A adds a new value with no arguments and an aux value to the current block.
 func (s *state) newValue0A(op ssa.Op, t ssa.Type, aux interface{}) *ssa.Value {
-	return s.curBlock.NewValue0A(s.peekLine(), op, t, aux)
+	return s.curBlock.NewValue0A(s.peekNode(), op, t, aux)
 }
 
 // newValue1 adds a new value with one argument to the current block.
 func (s *state) newValue1(op ssa.Op, t ssa.Type, arg *ssa.Value) *ssa.Value {
-	return s.curBlock.NewValue1(s.peekLine(), op, t, arg)
+	return s.curBlock.NewValue1(s.peekNode(), op, t, arg)
 }
 
 // newValue1A adds a new value with one argument and an aux value to the current block.
 func (s *state) newValue1A(op ssa.Op, t ssa.Type, aux interface{}, arg *ssa.Value) *ssa.Value {
-	return s.curBlock.NewValue1A(s.peekLine(), op, t, aux, arg)
+	return s.curBlock.NewValue1A(s.peekNode(), op, t, aux, arg)
 }
 
 // newValue1I adds a new value with one argument and an auxint value to the current block.
 func (s *state) newValue1I(op ssa.Op, t ssa.Type, aux int64, arg *ssa.Value) *ssa.Value {
-	return s.curBlock.NewValue1I(s.peekLine(), op, t, aux, arg)
+	return s.curBlock.NewValue1I(s.peekNode(), op, t, aux, arg)
 }
 
 // newValue2 adds a new value with two arguments to the current block.
 func (s *state) newValue2(op ssa.Op, t ssa.Type, arg0, arg1 *ssa.Value) *ssa.Value {
-	return s.curBlock.NewValue2(s.peekLine(), op, t, arg0, arg1)
+	return s.curBlock.NewValue2(s.peekNode(), op, t, arg0, arg1)
 }
 
 // newValue2I adds a new value with two arguments and an auxint value to the current block.
 func (s *state) newValue2I(op ssa.Op, t ssa.Type, aux int64, arg0, arg1 *ssa.Value) *ssa.Value {
-	return s.curBlock.NewValue2I(s.peekLine(), op, t, aux, arg0, arg1)
+	return s.curBlock.NewValue2I(s.peekNode(), op, t, aux, arg0, arg1)
 }
 
 // newValue3 adds a new value with three arguments to the current block.
 func (s *state) newValue3(op ssa.Op, t ssa.Type, arg0, arg1, arg2 *ssa.Value) *ssa.Value {
-	return s.curBlock.NewValue3(s.peekLine(), op, t, arg0, arg1, arg2)
+	return s.curBlock.NewValue3(s.peekNode(), op, t, arg0, arg1, arg2)
 }
 
 // entryNewValue adds a new value with no arguments to the entry block.
 func (s *state) entryNewValue0(op ssa.Op, t ssa.Type) *ssa.Value {
-	return s.f.Entry.NewValue0(s.peekLine(), op, t)
+	return s.f.Entry.NewValue0(s.peekNode(), op, t)
 }
 
 // entryNewValue adds a new value with no arguments and an aux value to the entry block.
 func (s *state) entryNewValue0A(op ssa.Op, t ssa.Type, aux interface{}) *ssa.Value {
-	return s.f.Entry.NewValue0A(s.peekLine(), op, t, aux)
+	return s.f.Entry.NewValue0A(s.peekNode(), op, t, aux)
 }
 
 // entryNewValue1 adds a new value with one argument to the entry block.
 func (s *state) entryNewValue1(op ssa.Op, t ssa.Type, arg *ssa.Value) *ssa.Value {
-	return s.f.Entry.NewValue1(s.peekLine(), op, t, arg)
+	return s.f.Entry.NewValue1(s.peekNode(), op, t, arg)
 }
 
 // entryNewValue1 adds a new value with one argument and an auxint value to the entry block.
 func (s *state) entryNewValue1I(op ssa.Op, t ssa.Type, auxint int64, arg *ssa.Value) *ssa.Value {
-	return s.f.Entry.NewValue1I(s.peekLine(), op, t, auxint, arg)
+	return s.f.Entry.NewValue1I(s.peekNode(), op, t, auxint, arg)
 }
 
 // entryNewValue1A adds a new value with one argument and an aux value to the entry block.
 func (s *state) entryNewValue1A(op ssa.Op, t ssa.Type, aux interface{}, arg *ssa.Value) *ssa.Value {
-	return s.f.Entry.NewValue1A(s.peekLine(), op, t, aux, arg)
+	return s.f.Entry.NewValue1A(s.peekNode(), op, t, aux, arg)
 }
 
 // entryNewValue2 adds a new value with two arguments to the entry block.
 func (s *state) entryNewValue2(op ssa.Op, t ssa.Type, arg0, arg1 *ssa.Value) *ssa.Value {
-	return s.f.Entry.NewValue2(s.peekLine(), op, t, arg0, arg1)
+	return s.f.Entry.NewValue2(s.peekNode(), op, t, arg0, arg1)
 }
 
 // constInt adds a new const int value to the entry block.
 func (s *state) constInt(t ssa.Type, c int64) *ssa.Value {
-	return s.f.ConstInt(s.peekLine(), t, c)
+	return s.f.ConstInt(s.peekNode(), t, c)
 }
 
 // ssaStmtList converts the statement n to SSA and adds it to s.
@@ -356,8 +356,8 @@ func (s *state) stmtList(l *NodeList) {
 
 // ssaStmt converts the statement n to SSA and adds it to s.
 func (s *state) stmt(n *Node) {
-	s.pushLine(n.Lineno)
-	defer s.popLine()
+	s.pushNode(n)
+	defer s.popNode()
 
 	// If s.curBlock is nil, then we're about to generate dead code.
 	// We can't just short-circuit here, though,
@@ -781,8 +781,8 @@ func (s *state) ssaOp(op uint8, t *Type) ssa.Op {
 
 // expr converts the expression n to ssa, adds it to s and returns the ssa result.
 func (s *state) expr(n *Node) *ssa.Value {
-	s.pushLine(n.Lineno)
-	defer s.popLine()
+	s.pushNode(n)
+	defer s.popNode()
 
 	s.stmtList(n.Ninit)
 	switch n.Op {
@@ -1258,7 +1258,7 @@ func (s *state) lookupVarIncoming(b *ssa.Block, t ssa.Type, name *Node) *ssa.Val
 	for i := 1; i < len(vals); i++ {
 		if vals[i] != v0 {
 			// need a phi value
-			v := b.NewValue0(s.peekLine(), ssa.OpPhi, t)
+			v := b.NewValue0(s.peekNode(), ssa.OpPhi, t)
 			v.AddArgs(vals...)
 			return v
 		}
@@ -1279,7 +1279,7 @@ func (s *state) lookupVarOutgoing(b *ssa.Block, t ssa.Type, name *Node) *ssa.Val
 	// Make v = copy(w).  We need the extra copy to
 	// prevent infinite recursion when looking up the
 	// incoming value of the variable.
-	v := b.NewValue0(s.peekLine(), ssa.OpCopy, t)
+	v := b.NewValue0(s.peekNode(), ssa.OpCopy, t)
 	m[name] = v
 	v.AddArg(s.lookupVarIncoming(b, t, name))
 	return v
@@ -1357,7 +1357,7 @@ func genssa(f *ssa.Func, ptxt *obj.Prog, gcargs, gclocals *Sym) {
 }
 
 func genValue(v *ssa.Value) {
-	lineno = v.Line
+	lineno = v.N.(*Node).Lineno
 	switch v.Op {
 	case ssa.OpAMD64ADDQ:
 		// TODO: use addq instead of leaq if target is in the right register.
@@ -1688,7 +1688,9 @@ func movZero(as int, width int64, nbytes int64, offset int64, regnum int16) (nle
 }
 
 func genBlock(b, next *ssa.Block, branches []branch) []branch {
-	lineno = b.Line
+	if nod, ok := b.N.(*Node); ok {
+		lineno = nod.Lineno
+	}
 	switch b.Kind {
 	case ssa.BlockPlain:
 		if b.Succs[0] != next {

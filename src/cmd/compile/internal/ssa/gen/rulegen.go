@@ -391,7 +391,7 @@ func genResult0(w io.Writer, arch arch, result string, alloc *int, top bool) str
 	} else {
 		v = fmt.Sprintf("v%d", *alloc)
 		*alloc++
-		fmt.Fprintf(w, "%s := v.Block.NewValue0(v.Line, %s, TypeInvalid)\n", v, opName(s[0], arch))
+		fmt.Fprintf(w, "%s := v.Block.NewValue0(v.N, %s, TypeInvalid)\n", v, opName(s[0], arch))
 	}
 	for _, a := range s[1:] {
 		if a[0] == '<' {

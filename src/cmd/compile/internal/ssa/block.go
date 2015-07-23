@@ -38,8 +38,8 @@ type Block struct {
 	// The containing function
 	Func *Func
 
-	// Line number for block's control operation
-	Line int32
+	// Node for block's control operation
+	N fmt.Stringer
 }
 
 //     kind           control    successors

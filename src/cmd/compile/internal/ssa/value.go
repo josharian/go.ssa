@@ -32,8 +32,8 @@ type Value struct {
 	// Containing basic block
 	Block *Block
 
-	// Source line number
-	Line int32
+	// Original AST Node
+	N fmt.Stringer
 
 	// Storage for the first two args
 	argstorage [2]*Value
@@ -54,6 +54,7 @@ func (v *Value) String() string {
 // long form print.  v# = opcode <type> [aux] args [: reg]
 func (v *Value) LongString() string {
 	s := fmt.Sprintf("v%d = %s", v.ID, v.Op.String())
+	s += " (" + v.N.String() + ")"
 	s += " <" + v.Type.String() + ">"
 	if v.AuxInt != 0 {
 		s += fmt.Sprintf(" [%d]", v.AuxInt)
