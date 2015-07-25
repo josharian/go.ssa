@@ -303,6 +303,9 @@ func regalloc(f *Func) {
 			if len(outputs) == 0 || outputs[0] == 0 {
 				// output doesn't need a register
 				b.Values = append(b.Values, v)
+			} else if regspec.inplace {
+				// output located in input register
+				home = setloc(home, v, home[v.Args[0].ID])
 			} else {
 				mask := outputs[0]
 				if mask & ^dirty != 0 {

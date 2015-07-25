@@ -74,22 +74,30 @@ func init() {
 	gpsp := gp | buildReg("SP")
 	gpspsb := gpsp | buildReg("SB")
 	flags := buildReg("FLAGS")
-	gp01 := regInfo{[]regMask{}, 0, []regMask{gp}}
-	gp11 := regInfo{[]regMask{gpsp}, 0, []regMask{gp}}
-	gp11sb := regInfo{[]regMask{gpspsb}, 0, []regMask{gp}}
-	gp21 := regInfo{[]regMask{gpsp, gpsp}, 0, []regMask{gp}}
-	gp21sb := regInfo{[]regMask{gpspsb, gpsp}, 0, []regMask{gp}}
-	gp21shift := regInfo{[]regMask{gpsp, buildReg("CX")}, 0, []regMask{gp}}
-	gp2flags := regInfo{[]regMask{gpsp, gpsp}, 0, []regMask{flags}}
-	gp1flags := regInfo{[]regMask{gpsp}, 0, []regMask{flags}}
-	flagsgp1 := regInfo{[]regMask{flags}, 0, []regMask{gp}}
-	gpload := regInfo{[]regMask{gpspsb, 0}, 0, []regMask{gp}}
-	gploadidx := regInfo{[]regMask{gpspsb, gpsp, 0}, 0, []regMask{gp}}
-	gpstore := regInfo{[]regMask{gpspsb, gpsp, 0}, 0, nil}
-	gpstoreconst := regInfo{[]regMask{gpspsb, 0}, 0, nil}
-	gpstoreidx := regInfo{[]regMask{gpspsb, gpsp, gpsp, 0}, 0, nil}
-	flagsgp := regInfo{[]regMask{flags}, 0, []regMask{gp}}
-	cmov := regInfo{[]regMask{flags, gp, gp}, 0, []regMask{gp}}
+
+	// common masks
+	gpmask := []regMask{gp}
+	flagsmask := []regMask{flags}
+
+	var (
+		gp01         = regInfo{outputs: gpmask}
+		gp11         = regInfo{inputs: []regMask{gpsp}, outputs: gpmask}
+		gp11inplace  = regInfo{inputs: []regMask{gpsp}, outputs: gpmask, inplace: true}
+		gp11sb       = regInfo{inputs: []regMask{gpspsb}, outputs: gpmask}
+		gp21         = regInfo{inputs: []regMask{gpsp, gpsp}, outputs: gpmask}
+		gp21sb       = regInfo{inputs: []regMask{gpspsb, gpsp}, outputs: gpmask}
+		gp21shift    = regInfo{inputs: []regMask{gpsp, buildReg("CX")}, outputs: gpmask}
+		gp2flags     = regInfo{inputs: []regMask{gpsp, gpsp}, outputs: flagsmask}
+		gp1flags     = regInfo{inputs: []regMask{gpsp}, outputs: flagsmask}
+		flagsgp1     = regInfo{inputs: flagsmask, outputs: gpmask}
+		gpload       = regInfo{inputs: []regMask{gpspsb, 0}, outputs: gpmask}
+		gploadidx    = regInfo{inputs: []regMask{gpspsb, gpsp, 0}, outputs: gpmask}
+		gpstore      = regInfo{inputs: []regMask{gpspsb, gpsp, 0}}
+		gpstoreconst = regInfo{inputs: []regMask{gpspsb, 0}}
+		gpstoreidx   = regInfo{inputs: []regMask{gpspsb, gpsp, gpsp, 0}}
+		flagsgp      = regInfo{inputs: flagsmask, outputs: gpmask}
+		cmov         = regInfo{inputs: []regMask{flags, gp, gp}, outputs: gpmask}
+	)
 
 	// Suffixes encode the bit width of various instructions.
 	// Q = 64 bit, L = 32 bit, W = 16 bit, B = 8 bit
@@ -105,7 +113,7 @@ func init() {
 		{name: "SARQ", reg: gp21shift, asm: "SARQ"},  // signed arg0 >> arg1, shift amount is mod 64
 		{name: "SARQconst", reg: gp11, asm: "SARQ"},  // signed arg0 >> auxint, shift amount 0-63
 
-		{name: "XORQconst", reg: gp11, asm: "XORQ"}, // arg0^auxint
+		{name: "XORQconst", reg: gp11inplace, asm: "XORQ"}, // arg0^auxint
 
 		{name: "CMPQ", reg: gp2flags, asm: "CMPQ"},      // arg0 compare to arg1
 		{name: "CMPQconst", reg: gp1flags, asm: "CMPQ"}, // arg0 compare to auxint
@@ -163,8 +171,12 @@ func init() {
 		{name: "MOVQstoreidx8", reg: gpstoreidx, asm: "MOVQ"}, // store 8 bytes in arg2 to arg0+8*arg1+auxint. arg3=mem
 
 		{name: "MOVXzero", reg: gpstoreconst}, // store auxint 0 bytes into arg0 using a series of MOV instructions. arg1=mem.
+
 		// TODO: implement this when register clobbering works
-		{name: "REPSTOSQ", reg: regInfo{[]regMask{buildReg("DI"), buildReg("CX")}, buildReg("DI AX CX"), nil}}, // store arg1 8-byte words containing zero into arg0 using STOSQ. arg2=mem.
+		{name: "REPSTOSQ", reg: regInfo{
+			inputs:   []regMask{buildReg("DI"), buildReg("CX")},
+			clobbers: buildReg("DI AX CX")},
+		}, // store arg1 8-byte words containing zero into arg0 using STOSQ. arg2=mem.
 
 		// Load/store from global. Same as the above loads, but arg0 is missing and
 		// aux is a GlobalOffset instead of an int64.
@@ -173,9 +185,12 @@ func init() {
 
 		//TODO: set register clobber to everything?
 		{name: "CALLstatic"},                                                            // call static function aux.(*gc.Sym).  arg0=mem, returns mem
-		{name: "CALLclosure", reg: regInfo{[]regMask{gpsp, buildReg("DX"), 0}, 0, nil}}, // call function via closure.  arg0=codeptr, arg1=closure, arg2=mem returns mem
+		{name: "CALLclosure", reg: regInfo{inputs: []regMask{gpsp, buildReg("DX"), 0}}}, // call function via closure.  arg0=codeptr, arg1=closure, arg2=mem returns mem
 
-		{name: "REPMOVSB", reg: regInfo{[]regMask{buildReg("DI"), buildReg("SI"), buildReg("CX")}, buildReg("DI SI CX"), nil}}, // move arg2 bytes from arg1 to arg0.  arg3=mem, returns memory
+		{name: "REPMOVSB", reg: regInfo{
+			inputs:   []regMask{buildReg("DI"), buildReg("SI"), buildReg("CX")},
+			clobbers: buildReg("DI SI CX")},
+		}, // move arg2 bytes from arg1 to arg0.  arg3=mem, returns memory
 
 		{name: "ADDQ", reg: gp21},              // arg0 + arg1
 		{name: "ADDQconst", reg: gp11},         // arg0 + auxint

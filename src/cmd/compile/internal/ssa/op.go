@@ -23,4 +23,5 @@ type regInfo struct {
 	inputs   []regMask
 	clobbers regMask
 	outputs  []regMask // NOTE: values can only have 1 output for now.
+	inplace  bool
 }

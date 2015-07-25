@@ -36,6 +36,7 @@ type regInfo struct {
 	inputs   []regMask
 	clobbers regMask
 	outputs  []regMask
+	inplace  bool
 }
 
 type regMask uint64
@@ -140,6 +141,9 @@ func genOp() {
 					fmt.Fprintf(w, "%d,%s\n", r, a.regMaskComment(r))
 				}
 				fmt.Fprintln(w, "},")
+			}
+			if v.reg.inplace {
+				fmt.Fprintln(w, "inplace: true,")
 			}
 			fmt.Fprintln(w, "},") // close reg info
 			fmt.Fprintln(w, "},") // close op
