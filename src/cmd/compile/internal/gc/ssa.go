@@ -342,6 +342,11 @@ func (s *state) entryNewValue1A(op ssa.Op, t ssa.Type, aux interface{}, arg *ssa
 	return s.f.Entry.NewValue1A(s.peekLine(), op, t, aux, arg)
 }
 
+// entryNewValue1IA adds a new value with one argument, an aux value, and an auxint value to the entry block.
+func (s *state) entryNewValue1IA(op ssa.Op, t ssa.Type, auxint int64, aux interface{}, arg *ssa.Value) *ssa.Value {
+	return s.f.Entry.NewValue1IA(s.peekLine(), op, t, auxint, aux, arg)
+}
+
 // entryNewValue2 adds a new value with two arguments to the entry block.
 func (s *state) entryNewValue2(op ssa.Op, t ssa.Type, arg0, arg1 *ssa.Value) *ssa.Value {
 	return s.f.Entry.NewValue2(s.peekLine(), op, t, arg0, arg1)
@@ -1225,11 +1230,7 @@ func (s *state) addr(n *Node) *ssa.Value {
 		case PEXTERN:
 			// global variable
 			aux := &ssa.ExternSymbol{n.Type, n.Sym}
-			v := s.entryNewValue1A(ssa.OpAddr, Ptrto(n.Type), aux, s.sb)
-			// TODO: Make OpAddr use AuxInt as well as Aux.
-			if n.Xoffset != 0 {
-				v = s.entryNewValue1I(ssa.OpOffPtr, v.Type, n.Xoffset, v)
-			}
+			v := s.entryNewValue1IA(ssa.OpAddr, Ptrto(n.Type), n.Xoffset, aux, s.sb)
 			return v
 		case PPARAM, PPARAMOUT, PAUTO:
 			// parameter/result slot or local variable

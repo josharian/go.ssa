@@ -131,8 +131,8 @@ var genericOps = []opData{
 	// The address of a variable.  arg0 is the base pointer (SB or SP, depending
 	// on whether it is a global or stack variable).  The Aux field identifies the
 	// variable.  It will be either an *ExternSymbol (with arg0=SB), *ArgSymbol (arg0=SP),
-	// or *AutoSymbol (arg0=SP).
-	{name: "Addr"}, // Address of a variable.  Arg0=SP or SB.  Aux identifies the variable.
+	// or *AutoSymbol (arg0=SP).  AuxInt is an offset.
+	{name: "Addr"}, // Address of a variable.  Arg0=SP or SB.  Aux identifies the variable. AuxInt is an offset.
 
 	{name: "SP"},   // stack pointer
 	{name: "SB"},   // static base pointer (a.k.a. globals pointer)

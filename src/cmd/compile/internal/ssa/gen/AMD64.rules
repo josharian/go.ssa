@@ -166,7 +166,7 @@
 (ConstBool {b}) && !b.(bool) -> (MOVBconst [0])
 (ConstBool {b}) && b.(bool) -> (MOVBconst [1])
 
-(Addr {sym} base) -> (LEAQ {sym} base)
+(Addr [off] {sym} base) -> (LEAQ [off] {sym} base)
 
 // block rewrites
 (If (SETL cmp) yes no) -> (LT cmp yes no)
