@@ -277,10 +277,26 @@ func (s *state) Error(msg string, args ...interface{}) {
 	yyerrorl(int(s.peekLine()), msg, args...)
 }
 
-func canonicalType(t ssa.Type) ssa.Type {
+var etypeToSSA = map[uint8]ssa.Type{
+	TBOOL:   ssa.TypeBool,
+	TINT8:   ssa.TypeInt8,
+	TINT16:  ssa.TypeInt16,
+	TINT32:  ssa.TypeInt32,
+	TINT64:  ssa.TypeInt64,
+	TUINT8:  ssa.TypeUInt8,
+	TUINT16: ssa.TypeUInt16,
+	TUINT32: ssa.TypeUInt32,
+	TUINT64: ssa.TypeUInt64,
+}
+
+func (s *state) canonicalType(t ssa.Type) ssa.Type {
 	typ, ok := t.(*Type)
 	if !ok {
 		return t
+	}
+	styp, ok := etypeToSSA[s.concreteEtype(typ)]
+	if ok {
+		return styp
 	}
 	if typ.Orig != nil {
 		return typ.Orig
@@ -290,72 +306,72 @@ func canonicalType(t ssa.Type) ssa.Type {
 
 // newValue0 adds a new value with no arguments to the current block.
 func (s *state) newValue0(op ssa.Op, t ssa.Type) *ssa.Value {
-	return s.curBlock.NewValue0(s.peekLine(), op, canonicalType(t))
+	return s.curBlock.NewValue0(s.peekLine(), op, s.canonicalType(t))
 }
 
 // newValue0A adds a new value with no arguments and an aux value to the current block.
 func (s *state) newValue0A(op ssa.Op, t ssa.Type, aux interface{}) *ssa.Value {
-	return s.curBlock.NewValue0A(s.peekLine(), op, canonicalType(t), aux)
+	return s.curBlock.NewValue0A(s.peekLine(), op, s.canonicalType(t), aux)
 }
 
 // newValue1 adds a new value with one argument to the current block.
 func (s *state) newValue1(op ssa.Op, t ssa.Type, arg *ssa.Value) *ssa.Value {
-	return s.curBlock.NewValue1(s.peekLine(), op, canonicalType(t), arg)
+	return s.curBlock.NewValue1(s.peekLine(), op, s.canonicalType(t), arg)
 }
 
 // newValue1A adds a new value with one argument and an aux value to the current block.
 func (s *state) newValue1A(op ssa.Op, t ssa.Type, aux interface{}, arg *ssa.Value) *ssa.Value {
-	return s.curBlock.NewValue1A(s.peekLine(), op, canonicalType(t), aux, arg)
+	return s.curBlock.NewValue1A(s.peekLine(), op, s.canonicalType(t), aux, arg)
 }
 
 // newValue1I adds a new value with one argument and an auxint value to the current block.
 func (s *state) newValue1I(op ssa.Op, t ssa.Type, aux int64, arg *ssa.Value) *ssa.Value {
-	return s.curBlock.NewValue1I(s.peekLine(), op, canonicalType(t), aux, arg)
+	return s.curBlock.NewValue1I(s.peekLine(), op, s.canonicalType(t), aux, arg)
 }
 
 // newValue2 adds a new value with two arguments to the current block.
 func (s *state) newValue2(op ssa.Op, t ssa.Type, arg0, arg1 *ssa.Value) *ssa.Value {
-	return s.curBlock.NewValue2(s.peekLine(), op, canonicalType(t), arg0, arg1)
+	return s.curBlock.NewValue2(s.peekLine(), op, s.canonicalType(t), arg0, arg1)
 }
 
 // newValue2I adds a new value with two arguments and an auxint value to the current block.
 func (s *state) newValue2I(op ssa.Op, t ssa.Type, aux int64, arg0, arg1 *ssa.Value) *ssa.Value {
-	return s.curBlock.NewValue2I(s.peekLine(), op, canonicalType(t), aux, arg0, arg1)
+	return s.curBlock.NewValue2I(s.peekLine(), op, s.canonicalType(t), aux, arg0, arg1)
 }
 
 // newValue3 adds a new value with three arguments to the current block.
 func (s *state) newValue3(op ssa.Op, t ssa.Type, arg0, arg1, arg2 *ssa.Value) *ssa.Value {
-	return s.curBlock.NewValue3(s.peekLine(), op, canonicalType(t), arg0, arg1, arg2)
+	return s.curBlock.NewValue3(s.peekLine(), op, s.canonicalType(t), arg0, arg1, arg2)
 }
 
 // entryNewValue adds a new value with no arguments to the entry block.
 func (s *state) entryNewValue0(op ssa.Op, t ssa.Type) *ssa.Value {
-	return s.f.Entry.NewValue0(s.peekLine(), op, canonicalType(t))
+	return s.f.Entry.NewValue0(s.peekLine(), op, s.canonicalType(t))
 }
 
 // entryNewValue adds a new value with no arguments and an aux value to the entry block.
 func (s *state) entryNewValue0A(op ssa.Op, t ssa.Type, aux interface{}) *ssa.Value {
-	return s.f.Entry.NewValue0A(s.peekLine(), op, canonicalType(t), aux)
+	return s.f.Entry.NewValue0A(s.peekLine(), op, s.canonicalType(t), aux)
 }
 
 // entryNewValue1 adds a new value with one argument to the entry block.
 func (s *state) entryNewValue1(op ssa.Op, t ssa.Type, arg *ssa.Value) *ssa.Value {
-	return s.f.Entry.NewValue1(s.peekLine(), op, canonicalType(t), arg)
+	return s.f.Entry.NewValue1(s.peekLine(), op, s.canonicalType(t), arg)
 }
 
 // entryNewValue1 adds a new value with one argument and an auxint value to the entry block.
 func (s *state) entryNewValue1I(op ssa.Op, t ssa.Type, auxint int64, arg *ssa.Value) *ssa.Value {
-	return s.f.Entry.NewValue1I(s.peekLine(), op, canonicalType(t), auxint, arg)
+	return s.f.Entry.NewValue1I(s.peekLine(), op, s.canonicalType(t), auxint, arg)
 }
 
 // entryNewValue1A adds a new value with one argument and an aux value to the entry block.
 func (s *state) entryNewValue1A(op ssa.Op, t ssa.Type, aux interface{}, arg *ssa.Value) *ssa.Value {
-	return s.f.Entry.NewValue1A(s.peekLine(), op, canonicalType(t), aux, arg)
+	return s.f.Entry.NewValue1A(s.peekLine(), op, s.canonicalType(t), aux, arg)
 }
 
 // entryNewValue2 adds a new value with two arguments to the entry block.
 func (s *state) entryNewValue2(op ssa.Op, t ssa.Type, arg0, arg1 *ssa.Value) *ssa.Value {
-	return s.f.Entry.NewValue2(s.peekLine(), op, canonicalType(t), arg0, arg1)
+	return s.f.Entry.NewValue2(s.peekLine(), op, s.canonicalType(t), arg0, arg1)
 }
 
 // constInt* routines add a new const int value to the entry block.

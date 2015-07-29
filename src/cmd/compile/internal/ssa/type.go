@@ -4,6 +4,8 @@
 
 package ssa
 
+import "fmt"
+
 // TODO: use go/types instead?
 
 // A type interface used to import cmd/internal/gc:Type
@@ -57,8 +59,8 @@ func (t *TypeImpl) IsString() bool   { return t.string }
 func (t *TypeImpl) IsMemory() bool   { return t.Memory }
 func (t *TypeImpl) IsFlags() bool    { return t.Flags }
 func (t *TypeImpl) String() string   { return t.Name }
-func (t *TypeImpl) Elem() Type       { panic("not implemented"); return nil }
-func (t *TypeImpl) PtrTo() Type      { panic("not implemented"); return nil }
+func (t *TypeImpl) Elem() Type       { panic(fmt.Errorf("Elem(%v) not implemented", t)) }
+func (t *TypeImpl) PtrTo() Type      { panic(fmt.Errorf("PtrTo(%v) not implemented", t)) }
 
 func (t *TypeImpl) Equal(u Type) bool {
 	x, ok := u.(*TypeImpl)

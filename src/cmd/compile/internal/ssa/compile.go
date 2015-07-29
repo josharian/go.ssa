@@ -19,11 +19,12 @@ func Compile(f *Func) {
 
 	// hook to print function & phase if panic happens
 	phaseName := "init"
-	defer func() {
-		if phaseName != "" {
-			f.Fatalf("panic during %s while compiling %s\n", phaseName, f.Name)
-		}
-	}()
+	_ = phaseName
+	// defer func() {
+	// 	if phaseName != "" {
+	// 		f.Fatalf("panic during %s while compiling %s\n", phaseName, f.Name)
+	// 	}
+	// }()
 
 	// Run all the passes
 	printFunc(f)

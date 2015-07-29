@@ -10,14 +10,16 @@ func applyRewrite(f *Func, rb func(*Block) bool, rv func(*Value, *Config) bool) 
 	// repeat rewrites until we find no more rewrites
 	var curb *Block
 	var curv *Value
+
+	_, _ = curb, curv
 	defer func() {
-		if curb != nil {
-			curb.Fatalf("panic during rewrite of block %s\n", curb.LongString())
-		}
-		if curv != nil {
-			curv.Fatalf("panic during rewrite of value %s\n", curv.LongString())
-			// TODO(khr): print source location also
-		}
+		// if curb != nil {
+		// 	curb.Fatalf("panic during rewrite of block %s\n", curb.LongString())
+		// }
+		// if curv != nil {
+		// 	curv.Fatalf("panic during rewrite of value %s\n", curv.LongString())
+		// 	// TODO(khr): print source location also
+		// }
 	}()
 	config := f.Config
 	for {
