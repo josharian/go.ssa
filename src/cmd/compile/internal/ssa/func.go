@@ -22,6 +22,8 @@ type Func struct {
 	RegAlloc []Location
 	// when stackalloc is done, the size of the stack frame
 	FrameSize int64
+
+	constants map[int64][]*Value // constants cache, keyed by constant value; users must check value's Op
 }
 
 // NumBlocks returns an integer larger than the id of any Block in the Func.
@@ -247,26 +249,36 @@ func (b *Block) NewValue3(line int32, op Op, t Type, arg0, arg1, arg2 *Value) *V
 	return v
 }
 
-// ConstInt returns an int constant representing its argument.
-func (f *Func) ConstInt8(line int32, t Type, c int8) *Value {
-	// TODO: cache?
-	return f.Entry.NewValue0I(line, OpConst8, t, int64(c))
+// constInt returns an int constant c.
+func (f *Func) constInt(line int32, op Op, t Type, c int64) *Value {
+	if f.constants == nil {
+		f.constants = make(map[int64][]*Value)
+	}
+	vv := f.constants[c]
+	for _, v := range vv {
+		if v.Op == op {
+			return v
+		}
+	}
+	v := f.Entry.NewValue0I(line, op, t, c)
+	f.constants[c] = append(f.constants[c], v)
+	return v
 }
-func (f *Func) ConstInt16(line int32, t Type, c int16) *Value {
-	// TODO: cache?
-	return f.Entry.NewValue0I(line, OpConst16, t, int64(c))
+
+func (f *Func) ConstInt8(line int32, c int8) *Value {
+	return f.constInt(line, OpConst8, TypeInt8, int64(c))
 }
-func (f *Func) ConstInt32(line int32, t Type, c int32) *Value {
-	// TODO: cache?
-	return f.Entry.NewValue0I(line, OpConst32, t, int64(c))
+func (f *Func) ConstInt16(line int32, c int16) *Value {
+	return f.constInt(line, OpConst16, TypeInt16, int64(c))
 }
-func (f *Func) ConstInt64(line int32, t Type, c int64) *Value {
-	// TODO: cache?
-	return f.Entry.NewValue0I(line, OpConst64, t, c)
+func (f *Func) ConstInt32(line int32, c int32) *Value {
+	return f.constInt(line, OpConst32, TypeInt32, int64(c))
 }
-func (f *Func) ConstIntPtr(line int32, t Type, c int64) *Value {
-	// TODO: cache?
-	return f.Entry.NewValue0I(line, OpConstPtr, t, c)
+func (f *Func) ConstInt64(line int32, c int64) *Value {
+	return f.constInt(line, OpConst64, TypeInt64, int64(c))
+}
+func (f *Func) ConstIntPtr(line int32, c int64) *Value {
+	return f.constInt(line, OpConstPtr, f.Config.Uintptr, int64(c))
 }
 
 func (f *Func) Logf(msg string, args ...interface{})           { f.Config.Logf(msg, args...) }

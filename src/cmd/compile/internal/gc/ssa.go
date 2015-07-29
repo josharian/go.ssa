@@ -348,32 +348,32 @@ func (s *state) entryNewValue2(op ssa.Op, t ssa.Type, arg0, arg1 *ssa.Value) *ss
 }
 
 // constInt* routines add a new const int value to the entry block.
-func (s *state) constInt8(t ssa.Type, c int8) *ssa.Value {
-	return s.f.ConstInt8(s.peekLine(), t, c)
+func (s *state) constInt8(c int8) *ssa.Value {
+	return s.f.ConstInt8(s.peekLine(), c)
 }
-func (s *state) constInt16(t ssa.Type, c int16) *ssa.Value {
-	return s.f.ConstInt16(s.peekLine(), t, c)
+func (s *state) constInt16(c int16) *ssa.Value {
+	return s.f.ConstInt16(s.peekLine(), c)
 }
-func (s *state) constInt32(t ssa.Type, c int32) *ssa.Value {
-	return s.f.ConstInt32(s.peekLine(), t, c)
+func (s *state) constInt32(c int32) *ssa.Value {
+	return s.f.ConstInt32(s.peekLine(), c)
 }
-func (s *state) constInt64(t ssa.Type, c int64) *ssa.Value {
-	return s.f.ConstInt64(s.peekLine(), t, c)
+func (s *state) constInt64(c int64) *ssa.Value {
+	return s.f.ConstInt64(s.peekLine(), c)
 }
-func (s *state) constIntPtr(t ssa.Type, c int64) *ssa.Value {
+func (s *state) constIntPtr(c int64) *ssa.Value {
 	if s.config.PtrSize == 4 && int64(int32(c)) != c {
 		s.Fatalf("pointer constant too big %d", c)
 	}
-	return s.f.ConstIntPtr(s.peekLine(), t, c)
+	return s.f.ConstIntPtr(s.peekLine(), c)
 }
-func (s *state) constInt(t ssa.Type, c int64) *ssa.Value {
+func (s *state) constInt(c int64) *ssa.Value {
 	if s.config.IntSize == 8 {
-		return s.constInt64(t, c)
+		return s.constInt64(c)
 	}
 	if int64(int32(c)) != c {
 		s.Fatalf("integer constant too big %d", c)
 	}
-	return s.constInt32(t, int32(c))
+	return s.constInt32(int32(c))
 }
 
 // ssaStmtList converts the statement n to SSA and adds it to s.
@@ -902,13 +902,13 @@ func (s *state) expr(n *Node) *ssa.Value {
 			i := Mpgetfix(n.Val().U.(*Mpint))
 			switch n.Type.Size() {
 			case 1:
-				return s.constInt8(n.Type, int8(i))
+				return s.constInt8(int8(i))
 			case 2:
-				return s.constInt16(n.Type, int16(i))
+				return s.constInt16(int16(i))
 			case 4:
-				return s.constInt32(n.Type, int32(i))
+				return s.constInt32(int32(i))
 			case 8:
-				return s.constInt64(n.Type, i)
+				return s.constInt64(i)
 			default:
 				s.Fatalf("bad integer size %d", n.Type.Size())
 				return nil
@@ -1072,7 +1072,7 @@ func (s *state) expr(n *Node) *ssa.Value {
 	case ODOTPTR:
 		p := s.expr(n.Left)
 		s.nilCheck(p)
-		p = s.newValue2(ssa.OpAddPtr, p.Type, p, s.constIntPtr(s.config.Uintptr, n.Xoffset))
+		p = s.newValue2(ssa.OpAddPtr, p.Type, p, s.constIntPtr(n.Xoffset))
 		return s.newValue2(ssa.OpLoad, n.Type, p, s.mem())
 
 	case OINDEX:
@@ -1086,7 +1086,7 @@ func (s *state) expr(n *Node) *ssa.Value {
 				len = s.newValue1(ssa.OpStringLen, s.config.Int, a)
 				elemtype = Types[TUINT8]
 			} else {
-				len = s.constInt(s.config.Int, n.Left.Type.Bound)
+				len = s.constInt(n.Left.Type.Bound)
 				elemtype = n.Left.Type.Type
 			}
 			s.boundsCheck(i, len)
@@ -1107,7 +1107,7 @@ func (s *state) expr(n *Node) *ssa.Value {
 		case n.Left.Type.IsString(): // string; not reachable for OCAP
 			return s.newValue1(ssa.OpStringLen, s.config.Int, s.expr(n.Left))
 		default: // array
-			return s.constInt(s.config.Int, n.Left.Type.Bound)
+			return s.constInt(n.Left.Type.Bound)
 		}
 
 	case OCALLFUNC, OCALLMETH:
@@ -1204,13 +1204,13 @@ func (s *state) zeroVal(t *Type) *ssa.Value {
 	case t.IsInteger():
 		switch t.Size() {
 		case 1:
-			return s.constInt8(t, 0)
+			return s.constInt8(0)
 		case 2:
-			return s.constInt16(t, 0)
+			return s.constInt16(0)
 		case 4:
-			return s.constInt32(t, 0)
+			return s.constInt32(0)
 		case 8:
-			return s.constInt64(t, 0)
+			return s.constInt64(0)
 		default:
 			s.Fatalf("bad sized integer type %s", t)
 		}
@@ -1277,7 +1277,7 @@ func (s *state) addr(n *Node) *ssa.Value {
 			a := s.addr(n.Left)
 			i := s.expr(n.Right)
 			i = s.extendIndex(i)
-			len := s.constInt(s.config.Int, n.Left.Type.Bound)
+			len := s.constInt(n.Left.Type.Bound)
 			s.boundsCheck(i, len)
 			return s.newValue2(ssa.OpPtrIndex, Ptrto(n.Left.Type.Type), a, i)
 		}
@@ -1287,11 +1287,11 @@ func (s *state) addr(n *Node) *ssa.Value {
 		return p
 	case ODOT:
 		p := s.addr(n.Left)
-		return s.newValue2(ssa.OpAddPtr, p.Type, p, s.constIntPtr(s.config.Uintptr, n.Xoffset))
+		return s.newValue2(ssa.OpAddPtr, p.Type, p, s.constIntPtr(n.Xoffset))
 	case ODOTPTR:
 		p := s.expr(n.Left)
 		s.nilCheck(p)
-		return s.newValue2(ssa.OpAddPtr, p.Type, p, s.constIntPtr(s.config.Uintptr, n.Xoffset))
+		return s.newValue2(ssa.OpAddPtr, p.Type, p, s.constIntPtr(n.Xoffset))
 	default:
 		s.Unimplementedf("addr: bad op %v", Oconv(int(n.Op), 0))
 		return nil
