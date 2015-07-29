@@ -4,7 +4,10 @@
 
 package ssa
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // TODO: use go/types instead?
 
@@ -46,6 +49,8 @@ type TypeImpl struct {
 	Flags  bool
 
 	Name string
+
+	addr int // number of times addr has been taken
 }
 
 func (t *TypeImpl) Size() int64      { return t.Size_ }
@@ -58,16 +63,35 @@ func (t *TypeImpl) IsPtr() bool      { return t.Ptr }
 func (t *TypeImpl) IsString() bool   { return t.string }
 func (t *TypeImpl) IsMemory() bool   { return t.Memory }
 func (t *TypeImpl) IsFlags() bool    { return t.Flags }
-func (t *TypeImpl) String() string   { return t.Name }
-func (t *TypeImpl) Elem() Type       { panic(fmt.Errorf("Elem(%v) not implemented", t)) }
-func (t *TypeImpl) PtrTo() Type      { panic(fmt.Errorf("PtrTo(%v) not implemented", t)) }
+
+func (t *TypeImpl) String() string {
+	if t.addr == 0 {
+		return t.Name
+	}
+	return strings.Repeat("*", t.addr) + t.Name
+}
+
+func (t *TypeImpl) Elem() Type {
+	if t.addr <= 0 {
+		panic(fmt.Errorf("Elem(%v) not a pointer or slice", t))
+	}
+	e := *t
+	e.addr--
+	return &e
+}
+
+func (t *TypeImpl) PtrTo() Type {
+	p := *t
+	p.addr++
+	return &p
+}
 
 func (t *TypeImpl) Equal(u Type) bool {
 	x, ok := u.(*TypeImpl)
 	if !ok {
 		return false
 	}
-	return x == t
+	return *x == *t
 }
 
 var (
