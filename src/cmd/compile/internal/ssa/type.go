@@ -27,6 +27,9 @@ type Type interface {
 
 	String() string
 	Equal(Type) bool
+
+	Var() interface{}
+	TypeOnly() Type
 }
 
 // Special compiler-only types.
@@ -49,6 +52,8 @@ func (t *CompilerType) IsFlags() bool    { return t.Flags }
 func (t *CompilerType) String() string   { return t.Name }
 func (t *CompilerType) Elem() Type       { panic("not implemented") }
 func (t *CompilerType) PtrTo() Type      { panic("not implemented") }
+func (t *CompilerType) Var() interface{} { return nil }
+func (t *CompilerType) TypeOnly() Type   { return t }
 
 func (t *CompilerType) Equal(u Type) bool {
 	x, ok := u.(*CompilerType)

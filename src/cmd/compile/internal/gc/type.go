@@ -23,12 +23,14 @@ func (t *Type) Alignment() int64 {
 	return int64(t.Align)
 }
 
-func (t *Type) Equal(u ssa.Type) bool {
-	x, ok := u.(*Type)
-	if !ok {
-		return false
+func (t *Type) Equal(x ssa.Type) bool {
+	switch x := x.(type) {
+	case *Type:
+		return Eqtype(t, x)
+	case TypeNode:
+		return Eqtype(t, x.Type)
 	}
-	return Eqtype(t, x)
+	return false
 }
 
 func (t *Type) IsBoolean() bool {
@@ -75,5 +77,7 @@ func (t *Type) PtrTo() ssa.Type {
 	return Ptrto(t)
 }
 
-func (t *Type) IsMemory() bool { return false }
-func (t *Type) IsFlags() bool  { return false }
+func (t *Type) IsMemory() bool     { return false }
+func (t *Type) IsFlags() bool      { return false }
+func (t *Type) Var() interface{}   { return nil }
+func (t *Type) TypeOnly() ssa.Type { return t }

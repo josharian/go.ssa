@@ -31,6 +31,8 @@ func (t *TypeImpl) IsFlags() bool    { return false }
 func (t *TypeImpl) String() string   { return t.Name }
 func (t *TypeImpl) Elem() Type       { panic("not implemented") }
 func (t *TypeImpl) PtrTo() Type      { panic("not implemented") }
+func (t *TypeImpl) Var() interface{} { return nil }
+func (t *TypeImpl) TypeOnly() Type   { return t }
 
 func (t *TypeImpl) Equal(u Type) bool {
 	x, ok := u.(*TypeImpl)

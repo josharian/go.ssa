@@ -54,6 +54,9 @@ func (v *Value) String() string {
 // long form print.  v# = opcode <type> [aux] args [: reg]
 func (v *Value) LongString() string {
 	s := fmt.Sprintf("v%d = %s", v.ID, v.Op.String())
+	if str, ok := v.Type.Var().(fmt.Stringer); ok {
+		s += " (" + str.String() + ")"
+	}
 	s += " <" + v.Type.String() + ">"
 	if v.AuxInt != 0 {
 		s += fmt.Sprintf(" [%d]", v.AuxInt)

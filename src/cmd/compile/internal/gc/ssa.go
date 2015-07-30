@@ -985,7 +985,7 @@ func (s *state) expr(n *Node) *ssa.Value {
 			return s.variable(n, n.Type)
 		}
 		addr := s.addr(n)
-		return s.newValue2(ssa.OpLoad, n.Type, addr, s.mem())
+		return s.newValue2(ssa.OpLoad, TypeNode{n}, addr, s.mem())
 	case OLITERAL:
 		switch n.Val().Ctype() {
 		case CTINT:
@@ -1570,6 +1570,9 @@ func (s *state) variable(name *Node, t ssa.Type) *ssa.Value {
 	v := s.vars[name]
 	if v == nil {
 		// TODO: get type?  Take Sym as arg?
+		if name != &memvar {
+			t = TypeNode{name}
+		}
 		v = s.newValue0A(ssa.OpFwdRef, t, name)
 		s.vars[name] = v
 	}
@@ -2366,6 +2369,27 @@ func localOffset(v *ssa.Value) int64 {
 	}
 	return slot.Idx
 }
+
+type TypeNode struct {
+	*Node
+}
+
+func (t TypeNode) Size() int64           { return t.Type.Size() }
+func (t TypeNode) Alignment() int64      { return t.Type.Alignment() }
+func (t TypeNode) IsBoolean() bool       { return t.Type.IsBoolean() }
+func (t TypeNode) IsInteger() bool       { return t.Type.IsInteger() }
+func (t TypeNode) IsSigned() bool        { return t.Type.IsSigned() }
+func (t TypeNode) IsFloat() bool         { return t.Type.IsFloat() }
+func (t TypeNode) IsPtr() bool           { return t.Type.IsPtr() }
+func (t TypeNode) IsString() bool        { return t.Type.IsString() }
+func (t TypeNode) IsMemory() bool        { return t.Type.IsMemory() }
+func (t TypeNode) IsFlags() bool         { return t.Type.IsFlags() }
+func (t TypeNode) Elem() ssa.Type        { return t.Type.Elem() }
+func (t TypeNode) PtrTo() ssa.Type       { return t.Type.PtrTo() }
+func (t TypeNode) String() string        { return t.Type.String() }
+func (t TypeNode) Equal(x ssa.Type) bool { return t.Type.Equal(x) }
+func (t TypeNode) Var() interface{}      { return t.Node }
+func (t TypeNode) TypeOnly() ssa.Type    { return t.Type }
 
 // ssaExport exports a bunch of compiler services for the ssa backend.
 type ssaExport struct {
