@@ -3444,7 +3444,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.AddArg(dst)
 			v.AddArg(src)
 			v0 := v.Block.NewValue0(v.Line, OpAMD64MOVQconst, TypeInvalid)
-			v0.Type = TypeUInt64
+			v0.Type = v.Block.Func.Config.Frontend().TypeUInt64()
 			v0.AuxInt = size
 			v.AddArg(v0)
 			v.AddArg(mem)
@@ -6971,7 +6971,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.resetArgs()
 			v.AddArg(destptr)
 			v0 := v.Block.NewValue0(v.Line, OpAMD64MOVBconst, TypeInvalid)
-			v0.Type = TypeInt8
+			v0.Type = v.Block.Func.Config.Frontend().TypeInt8()
 			v0.AuxInt = 0
 			v.AddArg(v0)
 			v.AddArg(mem)
@@ -6995,7 +6995,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.resetArgs()
 			v.AddArg(destptr)
 			v0 := v.Block.NewValue0(v.Line, OpAMD64MOVWconst, TypeInvalid)
-			v0.Type = TypeInt16
+			v0.Type = v.Block.Func.Config.Frontend().TypeInt16()
 			v0.AuxInt = 0
 			v.AddArg(v0)
 			v.AddArg(mem)
@@ -7019,7 +7019,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.resetArgs()
 			v.AddArg(destptr)
 			v0 := v.Block.NewValue0(v.Line, OpAMD64MOVLconst, TypeInvalid)
-			v0.Type = TypeInt32
+			v0.Type = v.Block.Func.Config.Frontend().TypeInt32()
 			v0.AuxInt = 0
 			v.AddArg(v0)
 			v.AddArg(mem)
@@ -7043,7 +7043,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.resetArgs()
 			v.AddArg(destptr)
 			v0 := v.Block.NewValue0(v.Line, OpAMD64MOVQconst, TypeInvalid)
-			v0.Type = TypeInt64
+			v0.Type = v.Block.Func.Config.Frontend().TypeInt64()
 			v0.AuxInt = 0
 			v.AddArg(v0)
 			v.AddArg(mem)
@@ -7090,7 +7090,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v.resetArgs()
 			v.AuxInt = size % 8
 			v0 := v.Block.NewValue0(v.Line, OpOffPtr, TypeInvalid)
-			v0.Type = TypeUInt64
+			v0.Type = v.Block.Func.Config.Frontend().TypeUInt64()
 			v0.AuxInt = size - (size % 8)
 			v0.AddArg(destptr)
 			v.AddArg(v0)
@@ -7098,7 +7098,7 @@ func rewriteValueAMD64(v *Value, config *Config) bool {
 			v1.Type = TypeMem
 			v1.AddArg(destptr)
 			v2 := v.Block.NewValue0(v.Line, OpAMD64MOVQconst, TypeInvalid)
-			v2.Type = TypeUInt64
+			v2.Type = v.Block.Func.Config.Frontend().TypeUInt64()
 			v2.AuxInt = size / 8
 			v1.AddArg(v2)
 			v1.AddArg(mem)
