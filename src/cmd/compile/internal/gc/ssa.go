@@ -2056,7 +2056,6 @@ func genValue(v *ssa.Value) {
 		p.From.Type = obj.TYPE_MEM
 		p.From.Reg = x86.REG_SP
 		p.From.Offset = localOffset(v.Args[0])
-		addSym(&p.From, v.Args[0])
 		p.To.Type = obj.TYPE_REG
 		p.To.Reg = regnum(v)
 	case ssa.OpStoreReg:
@@ -2070,7 +2069,6 @@ func genValue(v *ssa.Value) {
 		p.To.Type = obj.TYPE_MEM
 		p.To.Reg = x86.REG_SP
 		p.To.Offset = localOffset(v)
-		addSym(&p.To, v)
 	case ssa.OpPhi:
 		// just check to make sure regalloc did it right
 		f := v.Block.Func
@@ -2141,18 +2139,6 @@ func movSize(width int64) (asm int) {
 		panic(fmt.Errorf("bad movSize %d", width))
 	}
 	return asm
-}
-
-func addSym(a *obj.Addr, v *ssa.Value) {
-	x, ok := v.Type.Var().(*Node)
-	if !ok {
-		return
-	}
-	if x.Op != ONAME || x.Sym.Name == "" {
-		return
-	}
-	a.Name = obj.NAME_AUTO // TODO
-	a.Sym = Linksym(x.Sym)
 }
 
 // movZero generates a register indirect move with a 0 immediate and keeps track of bytes left and next offset
