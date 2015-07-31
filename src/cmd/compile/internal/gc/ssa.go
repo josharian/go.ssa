@@ -14,13 +14,49 @@ import (
 	"cmd/internal/obj/x86"
 )
 
+type pkgfn struct {
+	pkg, fn string
+}
+
+var skipfn = map[pkgfn]bool{
+	pkgfn{pkg: "zip", fn: "(*FileHeader).SetMode"}:           true,
+	pkgfn{pkg: "flate", fn: "(*huffmanBitWriter).writeBits"}: true,
+	pkgfn{pkg: "sql", fn: "(*DB).SetMaxOpenConns"}:           true,
+	pkgfn{pkg: "asn1", fn: "invalidLength"}:                  true,
+	pkgfn{pkg: "fmt", fn: "tooLarge"}:                        true,
+	pkgfn{pkg: "build", fn: "(*Package).IsCommand"}:          true,
+	pkgfn{pkg: "constant", fn: "is32bit"}:                    true,
+	pkgfn{pkg: "doc", fn: "(*reader).isVisible"}:             true,
+	pkgfn{pkg: "gccgoimporter", fn: "(*parser).next"}:        true,
+	pkgfn{pkg: "printer", fn: "(*printer).commentBefore"}:    true,
+	pkgfn{pkg: "token", fn: "Token.IsLiteral"}:               true,
+	pkgfn{pkg: "types", fn: "TypeAndValue.Assignable"}:       true,
+	pkgfn{pkg: "template", fn: "escFnsEq"}:                   true,
+	pkgfn{pkg: "image", fn: "Rectangle.Empty"}:               true,
+	pkgfn{pkg: "png", fn: "cbPaletted"}:                      true,
+	pkgfn{pkg: "big", fn: "nlz64"}:                           true,
+	pkgfn{pkg: "quotedprintable", fn: "isWhitespace"}:        true,
+	pkgfn{pkg: "net", fn: "byPriorityWeight.Less"}:           true,
+	pkgfn{pkg: "http", fn: "isToken"}:                        true,
+	pkgfn{pkg: "mail", fn: "isVchar"}:                        true,
+	pkgfn{pkg: "textproto", fn: "isASCIILetter"}:             true,
+	pkgfn{pkg: "reflect", fn: "(*rtype).Comparable"}:         true,
+	pkgfn{pkg: "regexp", fn: "(*queueOnePass).contains"}:     true,
+	pkgfn{pkg: "runtime", fn: "memequal128"}:                 true,
+	pkgfn{pkg: "scanner", fn: "isDecimal"}:                   true,
+	pkgfn{pkg: "template", fn: "jsIsSpecial"}:                true,
+	pkgfn{pkg: "parse", fn: "isSpace"}:                       true,
+	pkgfn{pkg: "time", fn: "Time.After"}:                     true,
+	pkgfn{pkg: "utf16", fn: "IsSurrogate"}:                   true,
+}
+
 // buildssa builds an SSA function
 // and reports whether it should be used.
 // Once the SSA implementation is complete,
 // it will never return nil, and the bool can be removed.
 func buildssa(fn *Node) (ssafn *ssa.Func, usessa bool) {
 	name := fn.Func.Nname.Sym.Name
-	usessa = strings.HasSuffix(name, "_ssa")
+	usessa = strings.HasSuffix(name, "_ssa") || name == os.Getenv("GOSSAFUNC")
 
 	if usessa {
 		fmt.Println("generating SSA for", name)
@@ -139,17 +175,29 @@ func buildssa(fn *Node) (ssafn *ssa.Func, usessa bool) {
 	// Main call to ssa package to compile function
 	ssa.Compile(s.f)
 
-	// Calculate stats about what percentage of functions SSA handles.
-	if false {
-		fmt.Printf("SSA implemented: %t\n", !e.unimplemented)
-	}
-
 	if e.unimplemented {
 		return nil, false
 	}
 
+	for _, b := range s.f.Blocks {
+		for _, v := range b.Values {
+			switch v.Op {
+			case ssa.OpAMD64REPSTOSQ, ssa.OpAMD64REPMOVSB:
+				return s.f, false
+			}
+		}
+	}
+
 	// TODO: enable codegen more broadly once the codegen stabilizes
 	// and runtime support is in (gc maps, write barriers, etc.)
+	if skipfn[pkgfn{pkg: localpkg.Name, fn: name}] {
+		return s.f, false
+	}
+	// Calculate stats about what percentage of functions SSA handles.
+	if localpkg.Name == os.Getenv("GOSSAPKG") && !e.unimplemented {
+		fmt.Printf("SSA implemented: %s\n", name)
+	}
+
 	return s.f, usessa || name == os.Getenv("GOSSAFUNC") || localpkg.Name == os.Getenv("GOSSAPKG")
 }
 
@@ -1839,7 +1887,9 @@ func genValue(v *ssa.Value) {
 		r := regnum(v)
 		if x != r {
 			if r == x86.REG_CX {
-				v.Fatalf("can't implement %s, target and shift both in CX", v.LongString())
+				v.Unimplementedf("SKIP: %q, %q", localpkg.Name, v.Block.Func.Name)
+				return
+				v.Unimplementedf("can't implement %s, target and shift both in CX", v.LongString())
 			}
 			p := Prog(regMoveAMD64(v.Type.Size()))
 			p.From.Type = obj.TYPE_REG
@@ -2046,7 +2096,7 @@ func genValue(v *ssa.Value) {
 		}
 	case ssa.OpLoadReg:
 		if v.Type.IsFlags() {
-			v.Unimplementedf("load flags not implemented: %v", v.LongString())
+			v.Unimplementedf("SKIP: %q, %q", localpkg.Name, v.Block.Func.Name)
 			return
 		}
 		p := Prog(movSize(v.Type.Size()))
@@ -2057,7 +2107,8 @@ func genValue(v *ssa.Value) {
 		p.To.Reg = regnum(v)
 	case ssa.OpStoreReg:
 		if v.Type.IsFlags() {
-			v.Unimplementedf("store flags not implemented: %v", v.LongString())
+			v.Unimplementedf("SKIP: %q, %q", localpkg.Name, v.Block.Func.Name)
+			// v.Unimplementedf("store flags not implemented: %v", v.LongString())
 			return
 		}
 		p := Prog(movSize(v.Type.Size()))
@@ -2072,7 +2123,7 @@ func genValue(v *ssa.Value) {
 		loc := f.RegAlloc[v.ID]
 		for _, a := range v.Args {
 			if f.RegAlloc[a.ID] != loc { // TODO: .Equal() instead?
-				v.Fatalf("phi arg at different location than phi %v %v %v %v", v, loc, a, f.RegAlloc[a.ID])
+				v.Unimplementedf("SKIP: %q, %q", localpkg.Name, v.Block.Func.Name)
 			}
 		}
 	case ssa.OpConst8, ssa.OpConst16, ssa.OpConst32, ssa.OpConst64, ssa.OpConstString, ssa.OpConstNil, ssa.OpConstBool:
@@ -2120,11 +2171,11 @@ func genValue(v *ssa.Value) {
 	case ssa.OpAMD64REPSTOSQ:
 		Prog(x86.AREP)
 		Prog(x86.ASTOSQ)
-		v.Unimplementedf("REPSTOSQ clobbers not implemented: %s", v.LongString())
+		v.Unimplementedf("SKIP: %q, %q", localpkg.Name, v.Block.Func.Name)
 	case ssa.OpAMD64REPMOVSB:
 		Prog(x86.AREP)
 		Prog(x86.AMOVSB)
-		v.Unimplementedf("REPMOVSB clobbers not implemented: %s", v.LongString())
+		v.Unimplementedf("SKIP: %q, %q", localpkg.Name, v.Block.Func.Name)
 	default:
 		v.Unimplementedf("genValue not implemented: %s", v.LongString())
 	}
@@ -2217,7 +2268,8 @@ func genBlock(b, next *ssa.Block, branches []branch) []branch {
 		}
 
 	default:
-		b.Unimplementedf("branch not implemented: %s. Control: %s", b.LongString(), b.Control.LongString())
+		b.Unimplementedf("SKIP: %q, %q", localpkg.Name, b.Func.Name)
+		// b.Unimplementedf("branch not implemented: %s. Control: %s", b.LongString(), b.Control.LongString())
 	}
 	return branches
 }
@@ -2370,7 +2422,7 @@ func localOffset(v *ssa.Value) int64 {
 	reg := v.Block.Func.RegAlloc[v.ID]
 	slot, ok := reg.(*ssa.LocalSlot)
 	if !ok {
-		v.Unimplementedf("localOffset of non-LocalSlot value: %s", v.LongString())
+		v.Unimplementedf("SKIP: %q, %q", localpkg.Name, v.Block.Func.Name)
 		return 0
 	}
 	return slot.Idx
