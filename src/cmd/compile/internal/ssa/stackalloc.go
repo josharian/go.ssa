@@ -37,7 +37,7 @@ func stackalloc(f *Func) {
 				continue
 			}
 			n = align(n, v.Type.Alignment())
-			f.Logf("stackalloc: %d-%d for %v\n", n, n+v.Type.Size(), v)
+			f.Logf("stackalloc: %d-%d for %v\n", n, n+v.Type.Size(), v.LongString())
 			loc := &LocalSlot{n}
 			n += v.Type.Size()
 			home = setloc(home, v, loc)
@@ -64,7 +64,7 @@ func stackalloc(f *Func) {
 				continue
 			}
 			n = align(n, v.Type.Alignment())
-			f.Logf("stackalloc: %d-%d for %v\n", n, n+v.Type.Size(), v)
+			f.Logf("stackalloc: %d-%d for %v\n", n, n+v.Type.Size(), v.LongString())
 			loc := &LocalSlot{n}
 			n += v.Type.Size()
 			home = setloc(home, v, loc)
@@ -80,7 +80,7 @@ func stackalloc(f *Func) {
 			}
 			t := s.Typ
 			n = align(n, t.Alignment())
-			f.Logf("stackalloc: %d-%d for auto %v\n", n, n+t.Size(), v)
+			f.Logf("stackalloc: %d-%d for auto %v\n", n, n+t.Size(), v.LongString())
 			s.Offset = n
 			n += t.Size()
 		}
@@ -91,6 +91,19 @@ func stackalloc(f *Func) {
 	n += f.Config.PtrSize // space for return address.  TODO: arch-dependent
 	f.RegAlloc = home
 	f.FrameSize = n
+
+	// log the arg and return value locations, for our readers' convenience
+	for _, b := range f.Blocks {
+		for _, v := range b.Values {
+			s, ok := v.Aux.(*ArgSymbol)
+			if !ok {
+				continue
+			}
+			// TODO: use Ret, print these only once, and in order
+			f.Logf("stackalloc: %d-%d for arg %v\n", f.FrameSize+s.Offset, f.FrameSize+s.Offset+s.Typ.Size(), v.LongString())
+		}
+	}
+	// a.Offset += v.Block.Func.FrameSize + sym.Offset
 
 	// TODO: share stack slots among noninterfering (& gc type compatible) values
 }

@@ -133,6 +133,7 @@ type ArgSymbol struct {
 	Typ    Type         // Go type
 	Offset int64        // Distance above frame pointer
 	Sym    fmt.Stringer // A *gc.Sym referring to the argument/result variable.
+	Ret    bool         // Ret reports whether the symbol is a return variable
 }
 
 // AutoSymbol is an aux value that encodes a local variable's

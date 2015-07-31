@@ -20,7 +20,7 @@ import (
 // it will never return nil, and the bool can be removed.
 func buildssa(fn *Node) (ssafn *ssa.Func, usessa bool) {
 	name := fn.Func.Nname.Sym.Name
-	usessa = strings.HasSuffix(name, "_ssa")
+	usessa = strings.HasSuffix(name, "_ssa") || name == os.Getenv("GOSSAFUNC")
 
 	if usessa {
 		fmt.Println("generating SSA for", name)
@@ -76,7 +76,7 @@ func buildssa(fn *Node) (ssafn *ssa.Func, usessa bool) {
 		n := d.N
 		switch n.Class {
 		case PPARAM, PPARAMOUT:
-			aux := &ssa.ArgSymbol{Typ: n.Type, Offset: n.Xoffset, Sym: n.Sym}
+			aux := &ssa.ArgSymbol{Typ: n.Type, Offset: n.Xoffset, Sym: n.Sym, Ret: n.Class == PPARAMOUT}
 			s.decladdrs[n] = s.entryNewValue1A(ssa.OpAddr, Ptrto(n.Type), aux, s.sp)
 		case PAUTO:
 			aux := &ssa.AutoSymbol{Typ: n.Type, Offset: -1, Sym: n.Sym} // offset TBD by SSA pass
