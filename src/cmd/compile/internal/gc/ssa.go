@@ -75,6 +75,21 @@ var skipfn = map[pkgfn]bool{
 	pkgfn{pkg: "http", fn: "isOWS"}:                          true,
 	pkgfn{pkg: "http", fn: "isOWS"}:                          true,
 	pkgfn{pkg: "sync", fn: "(*Cond).signalImpl"}:             true,
+	pkgfn{pkg: "syscall", fn: "WaitStatus.Signaled"}:         true,
+	pkgfn{pkg: "syscall", fn: "WaitStatus.Signaled"}:         true,
+	pkgfn{pkg: "parse", fn: "isEndOfLine"}:                   true,
+	pkgfn{pkg: "time", fn: "Time.Before"}:                    true,
+	pkgfn{pkg: "time", fn: "Time.Before"}:                    true,
+	pkgfn{pkg: "unicode", fn: "IsDigit"}:                     true,
+	pkgfn{pkg: "zip", fn: "header.isZip64"}:                  true,
+	pkgfn{pkg: "zip", fn: "fileWriter.isZip64"}:              true,
+	pkgfn{pkg: "types", fn: "(*declInfo).hasInitializer"}:    true,
+	pkgfn{pkg: "big", fn: "msb32"}:                           true,
+	pkgfn{pkg: "net", fn: "glob.func19"}:                     true,
+	pkgfn{pkg: "http", fn: "(*Request).ProtoAtLeast"}:        true,
+	pkgfn{pkg: "runtime", fn: "endcgo"}:                      true,
+	pkgfn{pkg: "syscall", fn: "WaitStatus.Stopped"}:          true,
+	pkgfn{pkg: "time", fn: "Time.Equal"}:                     true,
 }
 
 // buildssa builds an SSA function
