@@ -162,6 +162,27 @@ func buildssa(fn *Node) (ssafn *ssa.Func, usessa bool) {
 		return nil, false
 	}
 
+	for _, b := range s.f.Blocks {
+		for _, v := range b.Values {
+			switch v.Op {
+			case ssa.OpAMD64REPSTOSQ, ssa.OpAMD64REPMOVSB:
+				return s.f, false
+			case ssa.OpAMD64SHLQ, ssa.OpAMD64SHLL, ssa.OpAMD64SHLW, ssa.OpAMD64SHLB,
+				ssa.OpAMD64SHRQ, ssa.OpAMD64SHRL, ssa.OpAMD64SHRW, ssa.OpAMD64SHRB,
+				ssa.OpAMD64SARQ, ssa.OpAMD64SARL, ssa.OpAMD64SARW, ssa.OpAMD64SARB:
+				x := regnum(v.Args[0])
+				r := regnum(v)
+				if x != r && r == x86.REG_CX {
+					return s.f, false
+				}
+			case ssa.OpStoreReg, ssa.OpLoadReg:
+				if v.Type.IsFlags() {
+					return s.f, false
+				}
+			}
+		}
+	}
+
 	// TODO: enable codegen more broadly once the codegen stabilizes
 	// and runtime support is in (gc maps, write barriers, etc.)
 	return s.f, usessa || localpkg.Name == os.Getenv("GOSSAPKG")

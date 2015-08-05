@@ -62,7 +62,7 @@ const (
 	_StackSystem = goos_windows*512*ptrSize + goos_plan9*512 + goos_darwin*goarch_arm*1024
 
 	// The minimum size of stack used by Go code
-	_StackMin = 2048
+	_StackMin = 1024 * 1024 * 4 //2048
 
 	// The minimum stack size to allocate.
 	// The hackery here rounds FixedStack0 up to a power of 2.
