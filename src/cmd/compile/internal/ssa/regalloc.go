@@ -95,6 +95,8 @@ func regalloc(f *Func) {
 
 	addPhiCopies(f) // add copies of phi inputs in preceeding blocks
 
+	f.Logf("after phi copies:\n%s\n", f)
+
 	// Compute live values at the end of each block.
 	live := live(f)
 	lastUse := make([]int, f.NumValues())
@@ -409,11 +411,40 @@ func addPhiCopies(f *Func) {
 	}
 }
 
+// defined returns a map from value ID to a list of block IDs in which that value is well-defined.
+func defined(f *Func) [][]ID {
+	def := make([][]ID, f.NumValues())
+	work := make([]*Block, f.NumBlocks())
+	visited := make([]bool, f.NumBlocks())
+	for _, b := range f.Blocks {
+		work = work[:1]
+		work[0] = b
+		for i := range visited {
+			visited[i] = false
+		}
+		for len(work) != 0 {
+			c := work[0]
+			work = work[:len(work)-1]
+			if visited[c.ID] {
+				continue
+			}
+			visited[c.ID] = true
+			for _, v := range b.Values {
+				def[v.ID] = append(def[v.ID], c.ID)
+			}
+			work = append(work, b.Succs...)
+		}
+	}
+	return def
+}
+
 // live returns a map from block ID to a list of value IDs live at the end of that block
 // TODO: this could be quadratic if lots of variables are live across lots of
 // basic blocks.  Figure out a way to make this function (or, more precisely, the user
 // of this function) require only linear size & time.
 func live(f *Func) [][]ID {
+	def := defined(f)
+
 	live := make([][]ID, f.NumBlocks())
 	var phis []*Value
 
@@ -431,15 +462,25 @@ func live(f *Func) [][]ID {
 	// out to all of them.
 	po := postorder(f)
 	for {
-		for _, b := range po {
-			f.Logf("live %s %v\n", b, live[b.ID])
-		}
 		changed := false
 
 		for _, b := range po {
+			f.Logf("before block %s\n", b)
+			for _, b := range po {
+				f.Logf("  live %s %v\n", b, live[b.ID])
+			}
+
 			// Start with known live values at the end of the block
+			// However, discard values that are not well-defined in that block
 			s.clear()
-			s.addAll(live[b.ID])
+			for _, x := range live[b.ID] {
+				for _, y := range def[x] {
+					if y == b.ID {
+						s.add(x)
+						break
+					}
+				}
+			}
 			if b.Control != nil {
 				s.add(b.Control.ID)
 			}
@@ -482,6 +523,7 @@ func live(f *Func) [][]ID {
 			break
 		}
 	}
+
 	return live
 }
 
