@@ -89,23 +89,20 @@ func dfs(entry *Block, succFn linkedBlocks) (dfnum []int, order []*Block, parent
 	return
 }
 
+func blockPreds(b *Block) []*Block { return b.Preds }
+func blockSuccs(b *Block) []*Block { return b.Preds }
+
 // dominators computes the dominator tree for f.  It returns a slice
 // which maps block ID to the immediate dominator of that block.
 // Unreachable blocks map to nil.  The entry block maps to nil.
 func dominators(f *Func) []*Block {
-	preds := func(b *Block) []*Block { return b.Preds }
-	succs := func(b *Block) []*Block { return b.Succs }
-
 	//TODO: benchmark and try to find criteria for swapping between
 	// dominatorsSimple and dominatorsLT
-	return dominatorsLT(f.Entry, preds, succs)
+	return dominatorsLT(f.Entry, blockPreds, blockSuccs)
 }
 
 // postDominators computes the post-dominator tree for f.
 func postDominators(f *Func) []*Block {
-	preds := func(b *Block) []*Block { return b.Preds }
-	succs := func(b *Block) []*Block { return b.Succs }
-
 	if len(f.Blocks) == 0 {
 		return nil
 	}
@@ -119,11 +116,11 @@ func postDominators(f *Func) []*Block {
 		}
 	}
 
-	// infite loop with no exit
+	// infinite loop with no exit
 	if exit == nil {
 		return make([]*Block, f.NumBlocks())
 	}
-	return dominatorsLT(exit, succs, preds)
+	return dominatorsLT(exit, blockSuccs, blockPreds)
 }
 
 // dominatorsLt runs Lengauer-Tarjan to compute a dominator tree starting at
