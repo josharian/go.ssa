@@ -60,9 +60,22 @@
 (PtrIndex <t> ptr idx) -> (AddPtr ptr (MulPtr <config.Frontend().TypeUintptr()> idx (ConstPtr <config.Frontend().TypeUintptr()> [t.Elem().Size()])))
 (StructSelect [idx] (Load ptr mem)) -> (Load (OffPtr <v.Type.PtrTo()> [idx] ptr) mem)
 
-// big-object moves
-// TODO: fix size
-(Store dst (Load <t> src mem) mem) && t.Size() > 8 -> (Move [t.Size()] dst src mem)
+// big-object moves and zeros
+(Store dst (Load <t> src mem) mem) && t.Size() > config.PtrSize -> (Move [t.Size()] dst src mem)
+// TODO: Introduce dedicated ConstSlice and ConstInterface ops instead.
+// See https://go-review.googlesource.com/#/c/13587/1/src/cmd/compile/internal/ssa/gen/generic.rules@67.
+(Store dst (ConstNil <t>) mem) && t.Size() > config.PtrSize -> (Zero [t.Size()] dst mem)
+
+// zero loads
+// TODO: Add "_" as the second arg.  It isn't strictly necessary, but it makes it clear that there's a memory arg that isn't used.
+// See https://go-review.googlesource.com/#/c/13587/1/src/cmd/compile/internal/ssa/gen/generic.rules.
+(Load <t> ptr (Zero [size] ptr)) && t.Size() <= size && is32BitInt(t) -> (Const32 <t>)
+(Load <t> ptr (Zero [size] ptr)) && t.Size() <= size && is64BitInt(t) -> (Const64 <t>)
+(Load <t> ptr (Zero [size] ptr)) && t.Size() <= size && isPtr(t) -> (ConstPtr <t>)
+(Load <t> (AddPtr ptr (ConstPtr [off])) (Zero [size] ptr)) && off >= 0 && off + t.Size() <= size && is32BitInt(t) -> (Const32 <t>)
+(Load <t> (AddPtr ptr (ConstPtr [off])) (Zero [size] ptr)) && off >= 0 && off + t.Size() <= size && is64BitInt(t) -> (Const64 <t>)
+(Load <t> (AddPtr ptr (ConstPtr [off])) (Zero [size] ptr)) && off >= 0 && off + t.Size() <= size && isPtr(t) -> (ConstPtr <t>)
+// TODO: khr says: "These look ok, but I get the feeling we might need to make this a full optimization pass.  If you zero 2 things and then load from both, these rules won't trigger."
 
 // string ops
 (ConstString {s}) -> (StringMake (Addr <config.Frontend().TypeBytePtr()> {config.fe.StringData(s.(string))} (SB <config.Frontend().TypeUintptr()>)) (ConstPtr <config.Frontend().TypeUintptr()> [int64(len(s.(string)))]))

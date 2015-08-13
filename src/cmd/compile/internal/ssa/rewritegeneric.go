@@ -334,6 +334,183 @@ func rewriteValuegeneric(v *Value, config *Config) bool {
 	enddfd340bc7103ca323354aec96b113c23:
 		;
 	case OpLoad:
+		// match: (Load <t> ptr (Zero [size] ptr))
+		// cond: t.Size() <= size && is32BitInt(t)
+		// result: (Const32 <t>)
+		{
+			t := v.Type
+			ptr := v.Args[0]
+			if v.Args[1].Op != OpZero {
+				goto end0eac2af3897e832109b7bf0c693d76d8
+			}
+			size := v.Args[1].AuxInt
+			if v.Args[1].Args[0] != ptr {
+				goto end0eac2af3897e832109b7bf0c693d76d8
+			}
+			if !(t.Size() <= size && is32BitInt(t)) {
+				goto end0eac2af3897e832109b7bf0c693d76d8
+			}
+			v.Op = OpConst32
+			v.AuxInt = 0
+			v.Aux = nil
+			v.resetArgs()
+			v.Type = t
+			return true
+		}
+		goto end0eac2af3897e832109b7bf0c693d76d8
+	end0eac2af3897e832109b7bf0c693d76d8:
+		;
+		// match: (Load <t> ptr (Zero [size] ptr))
+		// cond: t.Size() <= size && is64BitInt(t)
+		// result: (Const64 <t>)
+		{
+			t := v.Type
+			ptr := v.Args[0]
+			if v.Args[1].Op != OpZero {
+				goto end97298a767f1ea0b77b259ac4913cd535
+			}
+			size := v.Args[1].AuxInt
+			if v.Args[1].Args[0] != ptr {
+				goto end97298a767f1ea0b77b259ac4913cd535
+			}
+			if !(t.Size() <= size && is64BitInt(t)) {
+				goto end97298a767f1ea0b77b259ac4913cd535
+			}
+			v.Op = OpConst64
+			v.AuxInt = 0
+			v.Aux = nil
+			v.resetArgs()
+			v.Type = t
+			return true
+		}
+		goto end97298a767f1ea0b77b259ac4913cd535
+	end97298a767f1ea0b77b259ac4913cd535:
+		;
+		// match: (Load <t> ptr (Zero [size] ptr))
+		// cond: t.Size() <= size && isPtr(t)
+		// result: (ConstPtr <t>)
+		{
+			t := v.Type
+			ptr := v.Args[0]
+			if v.Args[1].Op != OpZero {
+				goto end83df8e86af4f7b18d3e1f31f9facf3a1
+			}
+			size := v.Args[1].AuxInt
+			if v.Args[1].Args[0] != ptr {
+				goto end83df8e86af4f7b18d3e1f31f9facf3a1
+			}
+			if !(t.Size() <= size && isPtr(t)) {
+				goto end83df8e86af4f7b18d3e1f31f9facf3a1
+			}
+			v.Op = OpConstPtr
+			v.AuxInt = 0
+			v.Aux = nil
+			v.resetArgs()
+			v.Type = t
+			return true
+		}
+		goto end83df8e86af4f7b18d3e1f31f9facf3a1
+	end83df8e86af4f7b18d3e1f31f9facf3a1:
+		;
+		// match: (Load <t> (AddPtr ptr (ConstPtr [off])) (Zero [size] ptr))
+		// cond: off >= 0 && off + t.Size() <= size && is32BitInt(t)
+		// result: (Const32 <t>)
+		{
+			t := v.Type
+			if v.Args[0].Op != OpAddPtr {
+				goto end186a33b3f7e2ce051c348bed7cf0751d
+			}
+			ptr := v.Args[0].Args[0]
+			if v.Args[0].Args[1].Op != OpConstPtr {
+				goto end186a33b3f7e2ce051c348bed7cf0751d
+			}
+			off := v.Args[0].Args[1].AuxInt
+			if v.Args[1].Op != OpZero {
+				goto end186a33b3f7e2ce051c348bed7cf0751d
+			}
+			size := v.Args[1].AuxInt
+			if v.Args[1].Args[0] != ptr {
+				goto end186a33b3f7e2ce051c348bed7cf0751d
+			}
+			if !(off >= 0 && off+t.Size() <= size && is32BitInt(t)) {
+				goto end186a33b3f7e2ce051c348bed7cf0751d
+			}
+			v.Op = OpConst32
+			v.AuxInt = 0
+			v.Aux = nil
+			v.resetArgs()
+			v.Type = t
+			return true
+		}
+		goto end186a33b3f7e2ce051c348bed7cf0751d
+	end186a33b3f7e2ce051c348bed7cf0751d:
+		;
+		// match: (Load <t> (AddPtr ptr (ConstPtr [off])) (Zero [size] ptr))
+		// cond: off >= 0 && off + t.Size() <= size && is64BitInt(t)
+		// result: (Const64 <t>)
+		{
+			t := v.Type
+			if v.Args[0].Op != OpAddPtr {
+				goto endd55ca5913c1c05ae63324c7cdb4e1b0a
+			}
+			ptr := v.Args[0].Args[0]
+			if v.Args[0].Args[1].Op != OpConstPtr {
+				goto endd55ca5913c1c05ae63324c7cdb4e1b0a
+			}
+			off := v.Args[0].Args[1].AuxInt
+			if v.Args[1].Op != OpZero {
+				goto endd55ca5913c1c05ae63324c7cdb4e1b0a
+			}
+			size := v.Args[1].AuxInt
+			if v.Args[1].Args[0] != ptr {
+				goto endd55ca5913c1c05ae63324c7cdb4e1b0a
+			}
+			if !(off >= 0 && off+t.Size() <= size && is64BitInt(t)) {
+				goto endd55ca5913c1c05ae63324c7cdb4e1b0a
+			}
+			v.Op = OpConst64
+			v.AuxInt = 0
+			v.Aux = nil
+			v.resetArgs()
+			v.Type = t
+			return true
+		}
+		goto endd55ca5913c1c05ae63324c7cdb4e1b0a
+	endd55ca5913c1c05ae63324c7cdb4e1b0a:
+		;
+		// match: (Load <t> (AddPtr ptr (ConstPtr [off])) (Zero [size] ptr))
+		// cond: off >= 0 && off + t.Size() <= size && isPtr(t)
+		// result: (ConstPtr <t>)
+		{
+			t := v.Type
+			if v.Args[0].Op != OpAddPtr {
+				goto endf48318278faa65830af31e2936688c46
+			}
+			ptr := v.Args[0].Args[0]
+			if v.Args[0].Args[1].Op != OpConstPtr {
+				goto endf48318278faa65830af31e2936688c46
+			}
+			off := v.Args[0].Args[1].AuxInt
+			if v.Args[1].Op != OpZero {
+				goto endf48318278faa65830af31e2936688c46
+			}
+			size := v.Args[1].AuxInt
+			if v.Args[1].Args[0] != ptr {
+				goto endf48318278faa65830af31e2936688c46
+			}
+			if !(off >= 0 && off+t.Size() <= size && isPtr(t)) {
+				goto endf48318278faa65830af31e2936688c46
+			}
+			v.Op = OpConstPtr
+			v.AuxInt = 0
+			v.Aux = nil
+			v.resetArgs()
+			v.Type = t
+			return true
+		}
+		goto endf48318278faa65830af31e2936688c46
+	endf48318278faa65830af31e2936688c46:
+		;
 		// match: (Load <t> ptr mem)
 		// cond: t.IsString()
 		// result: (StringMake (Load <config.Frontend().TypeBytePtr()> ptr mem) (Load <config.Frontend().TypeUintptr()> (OffPtr <config.Frontend().TypeBytePtr()> [config.PtrSize] ptr) mem))
@@ -645,21 +822,21 @@ func rewriteValuegeneric(v *Value, config *Config) bool {
 		;
 	case OpStore:
 		// match: (Store dst (Load <t> src mem) mem)
-		// cond: t.Size() > 8
+		// cond: t.Size() > config.PtrSize
 		// result: (Move [t.Size()] dst src mem)
 		{
 			dst := v.Args[0]
 			if v.Args[1].Op != OpLoad {
-				goto end324ffb6d2771808da4267f62c854e9c8
+				goto end7f2c7224f44e7dc3ffeedf5da0b09fef
 			}
 			t := v.Args[1].Type
 			src := v.Args[1].Args[0]
 			mem := v.Args[1].Args[1]
 			if v.Args[2] != mem {
-				goto end324ffb6d2771808da4267f62c854e9c8
+				goto end7f2c7224f44e7dc3ffeedf5da0b09fef
 			}
-			if !(t.Size() > 8) {
-				goto end324ffb6d2771808da4267f62c854e9c8
+			if !(t.Size() > config.PtrSize) {
+				goto end7f2c7224f44e7dc3ffeedf5da0b09fef
 			}
 			v.Op = OpMove
 			v.AuxInt = 0
@@ -671,8 +848,33 @@ func rewriteValuegeneric(v *Value, config *Config) bool {
 			v.AddArg(mem)
 			return true
 		}
-		goto end324ffb6d2771808da4267f62c854e9c8
-	end324ffb6d2771808da4267f62c854e9c8:
+		goto end7f2c7224f44e7dc3ffeedf5da0b09fef
+	end7f2c7224f44e7dc3ffeedf5da0b09fef:
+		;
+		// match: (Store dst (ConstNil <t>) mem)
+		// cond: t.Size() > config.PtrSize
+		// result: (Zero [t.Size()] dst mem)
+		{
+			dst := v.Args[0]
+			if v.Args[1].Op != OpConstNil {
+				goto endb38c593f64d927a9c353194d1878a417
+			}
+			t := v.Args[1].Type
+			mem := v.Args[2]
+			if !(t.Size() > config.PtrSize) {
+				goto endb38c593f64d927a9c353194d1878a417
+			}
+			v.Op = OpZero
+			v.AuxInt = 0
+			v.Aux = nil
+			v.resetArgs()
+			v.AuxInt = t.Size()
+			v.AddArg(dst)
+			v.AddArg(mem)
+			return true
+		}
+		goto endb38c593f64d927a9c353194d1878a417
+	endb38c593f64d927a9c353194d1878a417:
 		;
 		// match: (Store dst str mem)
 		// cond: str.Type.IsString()
